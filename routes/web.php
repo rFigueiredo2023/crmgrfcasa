@@ -56,6 +56,9 @@ Route::middleware('web')->group(function () {
             // Clientes
             Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
             Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
+            Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit');
+            Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update');
+            Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
             // Transportadoras
             Route::post('/transportadoras', [TransportadoraController::class, 'store'])->name('transportadoras.store');

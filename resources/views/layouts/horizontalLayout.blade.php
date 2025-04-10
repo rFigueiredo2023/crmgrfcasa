@@ -69,16 +69,18 @@
     </div>
     {{-- /Layout container --}}
 
-    @if ($isMenu)
-        {{-- Overlay para dispositivos móveis --}}
-        <div class="layout-overlay layout-menu-toggle"></div>
-    @endif
+    @stack('modals')
 
-    {{-- Drag area para menu mobile --}}
+    <!-- Overlay -->
+    <div class="layout-overlay layout-menu-toggle"></div>
+
+    <!-- Drag Target Area To SlideIn Menu On Small Screens -->
     <div class="drag-target"></div>
     </div>
     {{-- /Layout wrapper --}}
-
-    {{-- Aqui fora, garantimos que modais fiquem fora do escopo de overflow --}}
-    @stack('modals')
 @endsection
+
+<head>
+    <!-- ... outros meta tags ... -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>

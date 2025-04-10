@@ -41,10 +41,13 @@ $contentLayout = (isset($container) ? (($container === 'container-xxl') ? "layou
   @yield('layoutContent')
   <!--/ Layout Content -->
 
-  <!-- Include Scripts -->
-  <!-- $isFront is used to append the front layout scripts only on the front layout otherwise the variable will be blank -->
+  <!-- Stack dos modais (fora de containers com overflow!) -->
+  @stack('modals')
+
+  <!-- Scripts do layout -->
   @include('layouts/sections/scripts' . $isFront)
+  @stack('scripts')
 
 </body>
-
 </html>
+

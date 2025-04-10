@@ -33,21 +33,26 @@
               <td>{{ $cliente->vendedor ? $cliente->vendedor->name : '-' }}</td>
               <td>
                   <div class="dropdown">
-                      <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                      <button type="button" class="btn p-0" data-bs-toggle="dropdown" aria-expanded="false">
                           <i class="bx bx-dots-vertical-rounded"></i>
                       </button>
-                      <div class="dropdown-menu">
-                          <a class="dropdown-item" href="javascript:void(0);"
-                             data-bs-toggle="modal"
-                             data-bs-target="#modalEditCliente"
-                             data-cliente-id="{{ $cliente->id }}">
-                              <i class="bx bx-edit-alt me-1"></i> Editar
-                          </a>
-                          <a class="dropdown-item" href="javascript:void(0);"
-                             onclick="confirmarExclusao({{ $cliente->id }})">
-                              <i class="bx bx-trash me-1"></i> Excluir
-                          </a>
-                      </div>
+                      <ul class="dropdown-menu">
+                          <li>
+                              <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#modalEditCliente"
+                                 data-cliente-id="{{ $cliente->id }}">
+                                  <i class="bx bx-edit-alt me-2"></i> Editar
+                              </a>
+                          </li>
+                          <li>
+                              <a class="dropdown-item d-flex align-items-center"
+                                 href="javascript:void(0);"
+                                 onclick="confirmarExclusao({{ $cliente->id }})">
+                                  <i class="bx bx-trash me-2"></i> Excluir
+                              </a>
+                          </li>
+                      </ul>
                   </div>
               </td>
           </tr>
@@ -60,31 +65,148 @@
   </table>
 </div>
 
-@push('modals')
-  @include('components.form-cliente')
-@endpush
-
 @push('scripts')
 <script>
     // Busca de clientes
-    const buscaInput = document.getElementById('busca-cliente');
-    if (buscaInput) {
-        buscaInput.addEventListener('input', function(e) {
-            const busca = e.target.value.toLowerCase();
-            const linhas = document.querySelectorAll('tbody tr');
+    document.addEventListener('DOMContentLoaded', function() {
+        const buscaClienteInput = document.getElementById('busca-cliente');
+        if (buscaClienteInput) {
+            buscaClienteInput.addEventListener('input', function(e) {
+                const busca = e.target.value.toLowerCase();
+                const linhas = document.querySelectorAll('tbody tr');
 
-            linhas.forEach(function(linha) {
-                const texto = linha.textContent.toLowerCase();
-                linha.style.display = texto.includes(busca) ? '' : 'none';
+                linhas.forEach(function(linha) {
+                    const texto = linha.textContent.toLowerCase();
+                    linha.style.display = texto.includes(busca) ? '' : 'none';
+                });
             });
-        });
-    }
-
-    // Função para confirmar exclusão
-    function confirmarExclusao(id) {
-        if (confirm('Tem certeza que deseja excluir este cliente?')) {
-            // Implementar a lógica de exclusão
         }
-    }
+
+        // Função para confirmar e executar a exclusão
+        function confirmarExclusao(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                // Criar um form dinâmico para enviar a requisição DELETE
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/customers/clientes/${id}`;
+
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_token';
+                tokenInput.value = document.querySelector('meta[name="csrf-token"]').content;
+
+                form.appendChild(methodInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Inicialização do modal de edição
+        const modalEditCliente = document.getElementById('modalEditCliente');
+        if (modalEditCliente) {
+            modalEditCliente.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const clienteId = button.getAttribute('data-cliente-id');
+                const form = modalEditCliente.querySelector('#formEditCliente');
+
+                // Atualiza a action do formulário
+                form.action = `/customers/clientes/${clienteId}`;
+
+                // Busca os dados do cliente via AJAX
+                fetch(`/customers/clientes/${clienteId}/edit`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro na resposta da rede');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data) {
+                            throw new Error('Dados do cliente não encontrados');
+                        }
+
+                        // Preenche os campos do formulário usando querySelector no form
+                        const campos = {
+                            'razao_social': '#edit_razao_social',
+                            'cnpj': '#edit_cnpj',
+                            'ie': '#edit_ie',
+                            'endereco': '#edit_endereco',
+                            'codigo_ibge': '#edit_codigo_ibge',
+                            'telefone': '#edit_telefone',
+                            'contato': '#edit_contato'
+                        };
+
+                        Object.keys(campos).forEach(campo => {
+                            const input = form.querySelector(campos[campo]);
+                            if (input) {
+                                input.value = data[campo] || '';
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar dados do cliente:', error);
+                        alert('Erro ao carregar dados do cliente');
+                    });
+            });
+        }
+    });
 </script>
 @endpush
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="modalEditCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-simple modal-dialog-centered">
+        <div class="modal-content p-3 p-md-5">
+            <div class="modal-body">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="text-center mb-4">
+                    <h3 class="mb-2">Editar Cliente</h3>
+                    <p class="text-muted">Altere os dados do cliente</p>
+                </div>
+
+                <form id="formEditCliente" class="row g-3" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="col-md-6">
+                        <label class="form-label" for="edit_razao_social">Razão Social</label>
+                        <input type="text" class="form-control" id="edit_razao_social" name="razao_social" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="edit_cnpj">CNPJ</label>
+                        <input type="text" class="form-control" id="edit_cnpj" name="cnpj" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="edit_ie">Inscrição Estadual</label>
+                        <input type="text" class="form-control" id="edit_ie" name="ie">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="edit_endereco">Endereço</label>
+                        <input type="text" class="form-control" id="edit_endereco" name="endereco" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="edit_codigo_ibge">Código IBGE</label>
+                        <input type="text" class="form-control" id="edit_codigo_ibge" name="codigo_ibge" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="edit_telefone">Telefone</label>
+                        <input type="text" class="form-control" id="edit_telefone" name="telefone" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label" for="edit_contato">Contato</label>
+                        <input type="text" class="form-control" id="edit_contato" name="contato" required>
+                    </div>
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-primary me-sm-3 me-1">Atualizar</button>
+                        <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -81,4 +81,35 @@ class ClienteController extends Controller
             })
         ]);
     }
+
+    public function edit(Cliente $cliente)
+    {
+        try {
+            return response()->json($cliente);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao carregar dados do cliente'], 500);
+        }
+    }
+
+    public function update(Request $request, Cliente $cliente)
+    {
+        $validated = $request->validate([
+            'razao_social' => 'required',
+            'cnpj' => 'required',
+            'endereco' => 'required',
+            'codigo_ibge' => 'required',
+            'telefone' => 'required',
+            'contato' => 'required',
+        ]);
+
+        $cliente->update($validated);
+
+        return redirect()->back()->with('success', 'Cliente atualizado com sucesso!');
+    }
+
+    public function destroy(Cliente $cliente)
+    {
+        $cliente->delete();
+        return redirect()->back()->with('success', 'Cliente excluído com sucesso!');
+    }
 }
