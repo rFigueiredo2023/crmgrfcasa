@@ -9,35 +9,38 @@
     {
       "url": "/customers",
       "name": "Cadastros",
-      "icon": "menu-icon tf-icons bx bx-home-smile",
+      "icon": "menu-icon tf-icons bx bx-notepad",
       "slug": "pages-customers"
     },
     {
       "url": "/atendimentos",
       "name": "Atendimentos",
-      "icon": "menu-icon tf-icons bx bx-conversation",
+      "icon": "menu-icon tf-icons bx bx-phone-call",
       "slug": "pages-atendimentos"
     },
     {
-      "url": "/pages/misc-error",
-      "name": "Error",
-      "icon": "menu-icon tf-icons bx bx-error",
-      "slug": "pages-misc-error",
-      "target": "_blank"
+      "url": "/order",
+      "name": "Pedidos",
+      "icon": "menu-icon tf-icons bx bx-cart-add",
+      "slug": "pages-order"
     },
     {
-      "url": "/auth/login-basic",
-      "name": "Login",
-      "icon": "menu-icon tf-icons bx bx-log-in",
-      "slug": "auth-login-basic",
-      "target": "_blank"
+      "url": "/financial",
+      "name": "Financeiro",
+      "icon": "menu-icon tf-icons bx bx-wallet-alt",
+      "slug": "pages-financial"
     },
     {
-      "url": "/auth/register-basic",
-      "name": "Register",
-      "icon": "menu-icon tf-icons bx bx-user",
-      "slug": "auth-register-basic",
-      "target": "_blank"
+      "url": "/email",
+      "name": "E-mail",
+      "icon": "menu-icon tf-icons bx bx-envelope",
+      "slug": "pages-email"
+    },
+    {
+      "url": "/customers",
+      "name": "Chat",
+      "icon": "menu-icon tf-icons bx bx-message-dots",
+      "slug": "pages-chat"
     }
   ]
 }
