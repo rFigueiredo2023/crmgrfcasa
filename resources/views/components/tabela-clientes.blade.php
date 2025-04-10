@@ -41,7 +41,7 @@
                               <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);"
                                  data-bs-toggle="modal"
                                  data-bs-target="#modalEditCliente"
-                                 data-cliente-id="{{ $cliente->id }}">
+                                 data-id="{{ $cliente->id }}">
                                   <i class="bx bx-edit-alt me-2"></i> Editar
                               </a>
                           </li>
@@ -112,8 +112,13 @@
         if (modalEditCliente) {
             modalEditCliente.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
-                const clienteId = button.getAttribute('data-cliente-id');
-                const form = modalEditCliente.querySelector('#formEditCliente');
+                const clienteId = button.getAttribute('data-id');
+                const form = this.querySelector('#formEditCliente');
+
+                if (!clienteId) {
+                    console.error('ID do cliente não encontrado');
+                    return;
+                }
 
                 // Atualiza a action do formulário
                 form.action = `/customers/clientes/${clienteId}`;
@@ -131,23 +136,14 @@
                             throw new Error('Dados do cliente não encontrados');
                         }
 
-                        // Preenche os campos do formulário usando querySelector no form
-                        const campos = {
-                            'razao_social': '#edit_razao_social',
-                            'cnpj': '#edit_cnpj',
-                            'ie': '#edit_ie',
-                            'endereco': '#edit_endereco',
-                            'codigo_ibge': '#edit_codigo_ibge',
-                            'telefone': '#edit_telefone',
-                            'contato': '#edit_contato'
-                        };
-
-                        Object.keys(campos).forEach(campo => {
-                            const input = form.querySelector(campos[campo]);
-                            if (input) {
-                                input.value = data[campo] || '';
-                            }
-                        });
+                        // Preenche os campos do formulário
+                        form.querySelector('#edit_razao_social').value = data.razao_social || '';
+                        form.querySelector('#edit_cnpj').value = data.cnpj || '';
+                        form.querySelector('#edit_ie').value = data.ie || '';
+                        form.querySelector('#edit_endereco').value = data.endereco || '';
+                        form.querySelector('#edit_codigo_ibge').value = data.codigo_ibge || '';
+                        form.querySelector('#edit_telefone').value = data.telefone || '';
+                        form.querySelector('#edit_contato').value = data.contato || '';
                     })
                     .catch(error => {
                         console.error('Erro ao carregar dados do cliente:', error);
