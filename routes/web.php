@@ -11,6 +11,9 @@ use App\Http\Controllers\pages\Custormers;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TransportadoraController;
 use App\Http\Controllers\VeiculoController;
+use App\Http\Controllers\AtendimentoController;
+use App\Models\Cliente;
+use App\Models\Atendimento;
 // Importa os controllers dos Dashboards
 use App\Http\Controllers\Dashboards\AdminDashboardController;
 use App\Http\Controllers\Dashboards\VendasDashboardController;
@@ -61,6 +64,15 @@ Route::middleware('web')->group(function () {
             Route::post('/veiculos', [VeiculoController::class, 'store'])->name('veiculos.store');
             Route::get('/veiculos', [VeiculoController::class, 'index'])->name('veiculos.index');
         });
+
+        // Atendimentos
+        Route::prefix('atendimentos')->group(function () {
+            Route::get('/', [AtendimentoController::class, 'index'])->name('atendimentos.index');
+            Route::post('/', [AtendimentoController::class, 'store'])->name('atendimentos.store');
+            Route::get('/search', [AtendimentoController::class, 'search'])->name('atendimentos.search');
+        });
+
+        Route::get('/atendimentos', [AtendimentoController::class, 'index'])->name('atendimentos.index');
     });
 });
 

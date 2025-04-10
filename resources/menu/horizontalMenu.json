@@ -13,6 +13,12 @@
       "slug": "pages-customers"
     },
     {
+      "url": "/atendimentos",
+      "name": "Atendimentos",
+      "icon": "menu-icon tf-icons bx bx-conversation",
+      "slug": "pages-atendimentos"
+    },
+    {
       "url": "/pages/misc-error",
       "name": "Error",
       "icon": "menu-icon tf-icons bx bx-error",
