@@ -24,4 +24,24 @@ class Cliente extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function atendimentos()
+    {
+        return $this->hasMany(Atendimento::class);
+    }
+
+    public function arquivos()
+    {
+        return $this->hasMany(Arquivo::class);
+    }
+
+    public function mensagens()
+    {
+        return $this->hasMany(Mensagem::class);
+    }
+
+    public function ultimoAtendimento()
+    {
+        return $this->hasOne(Atendimento::class)->latest();
+    }
 }

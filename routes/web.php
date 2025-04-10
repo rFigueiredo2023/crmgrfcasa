@@ -18,6 +18,7 @@ use App\Models\Atendimento;
 use App\Http\Controllers\Dashboards\AdminDashboardController;
 use App\Http\Controllers\Dashboards\VendasDashboardController;
 use App\Http\Controllers\Dashboards\FinancialDashboardController;
+use App\Http\Controllers\LeadController;
 
 // Rotas públicas
 Route::middleware('web')->group(function () {
@@ -51,7 +52,7 @@ Route::middleware('web')->group(function () {
         // Customers
         Route::prefix('customers')->group(function () {
             Route::get('/', [Custormers::class, 'index'])->name('pages-customers');
-            
+
             // Clientes
             Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
             Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
@@ -73,6 +74,13 @@ Route::middleware('web')->group(function () {
         });
 
         Route::get('/atendimentos', [AtendimentoController::class, 'index'])->name('atendimentos.index');
+
+        // Leads
+        Route::prefix('leads')->group(function () {
+            Route::post('/', [LeadController::class, 'store'])->name('leads.store');
+            Route::put('/{lead}', [LeadController::class, 'update'])->name('leads.update');
+            Route::delete('/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
+        });
     });
 });
 

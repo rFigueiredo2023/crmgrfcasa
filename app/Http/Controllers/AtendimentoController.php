@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Atendimento;
 use App\Models\Cliente;
+use App\Models\Lead;
 use Illuminate\Http\Request;
 
 class AtendimentoController extends Controller
@@ -12,7 +13,11 @@ class AtendimentoController extends Controller
     {
         $atendimentos = Atendimento::with(['vendedor', 'cliente'])->get();
         $clientes = Cliente::all();
-        return view('content.pages.atendimentos.pages-atendimentos', compact('atendimentos', 'clientes'));
+        $leads = Lead::all();
+
+        return view('content.pages.atendimentos.pages-atendimentos',
+            compact('atendimentos', 'clientes', 'leads')
+        );
     }
 
     public function store(Request $request)
@@ -53,4 +58,4 @@ class AtendimentoController extends Controller
         $atendimentos = $query->with(['vendedor', 'cliente'])->get();
         return view('content.pages.atendimentos.pages-atendimentos', compact('atendimentos'));
     }
-} 
+}

@@ -4,7 +4,7 @@
 
   <div class="d-flex align-items-center gap-2">
     <input type="text" class="form-control" placeholder="Buscar transportadora..." style="max-width: 220px" />
-    <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasAddTransportadora">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAddTransportadora">
       <i class="bx bx-plus"></i> Adicionar
     </button>
   </div>
@@ -24,3 +24,7 @@
     </thead>
   </table>
 </div>
+
+@push('modals')
+  @include('components.form-transportadora')
+@endpush

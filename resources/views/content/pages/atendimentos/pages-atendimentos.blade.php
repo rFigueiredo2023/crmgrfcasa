@@ -67,11 +67,6 @@
                     <i class="bx bx-bulb icon-sm me-1"></i>Leads
                 </button>
             </li>
-            <li class="nav-item">
-                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#aba-novo-lead" aria-controls="aba-novo-lead" aria-selected="false">
-                    <i class="bx bx-plus icon-sm me-1"></i>Novo Lead
-                </button>
-            </li>
         </ul>
 
         <div class="tab-content">
@@ -83,11 +78,6 @@
             <!-- ABA LEADS -->
             <div class="tab-pane fade" id="aba-leads" role="tabpanel">
                 @include('atendimentos.tabs.leads')
-            </div>
-
-            <!-- ABA NOVO LEAD -->
-            <div class="tab-pane fade" id="aba-novo-lead" role="tabpanel">
-                @include('atendimentos.tabs.novo-lead')
             </div>
         </div>
     </div>

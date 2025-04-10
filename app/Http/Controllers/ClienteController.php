@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ClienteController extends Controller
 {
@@ -37,5 +38,47 @@ class ClienteController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Cliente cadastrado com sucesso!');
+    }
+
+    public function detalhes(Cliente $cliente)
+    {
+        $cliente->load(['atendimentos.vendedor', 'arquivos.usuario', 'mensagens.usuario']);
+
+        return response()->json([
+            'razao_social' => $cliente->razao_social,
+            'cnpj' => $cliente->cnpj,
+            'telefone' => $cliente->telefone,
+            'contato' => $cliente->contato,
+            'interacoes' => $cliente->atendimentos->map(function($atendimento) {
+                return [
+                    'data' => $atendimento->data_atendimento->format('d/m/Y H:i'),
+                    'descricao' => $atendimento->descricao,
+                    'tipo' => $atendimento->tipo_atendimento,
+                    'status' => $atendimento->status,
+                    'vendedor' => $atendimento->vendedor->name
+                ];
+            }),
+            'arquivos' => $cliente->arquivos->map(function($arquivo) {
+                return [
+                    'id' => $arquivo->id,
+                    'nome' => $arquivo->nome_original,
+                    'tamanho' => $arquivo->tamanho,
+                    'tipo' => $arquivo->tipo,
+                    'url' => Storage::url($arquivo->caminho),
+                    'data' => $arquivo->created_at->format('d/m/Y H:i'),
+                    'usuario' => $arquivo->usuario->name
+                ];
+            }),
+            'mensagens' => $cliente->mensagens->map(function($mensagem) {
+                return [
+                    'id' => $mensagem->id,
+                    'usuario' => $mensagem->usuario->name,
+                    'mensagem' => $mensagem->conteudo,
+                    'tipo' => $mensagem->user_id === auth()->id() ? 'sent' : 'received',
+                    'data' => $mensagem->created_at->format('d/m/Y H:i'),
+                    'lida' => $mensagem->lida
+                ];
+            })
+        ]);
     }
 }

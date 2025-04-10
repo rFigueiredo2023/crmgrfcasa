@@ -17,30 +17,7 @@
       "name": "Atendimentos",
       "icon": "menu-icon tf-icons bx bx-phone-call",
       "slug": "pages-atendimentos"
-    },
-    {
-      "url": "/order",
-      "name": "Pedidos",
-      "icon": "menu-icon tf-icons bx bx-cart-add",
-      "slug": "pages-order"
-    },
-    {
-      "url": "/financial",
-      "name": "Financeiro",
-      "icon": "menu-icon tf-icons bx bx-wallet-alt",
-      "slug": "pages-financial"
-    },
-    {
-      "url": "/email",
-      "name": "E-mail",
-      "icon": "menu-icon tf-icons bx bx-envelope",
-      "slug": "pages-email"
-    },
-    {
-      "url": "/customers",
-      "name": "Chat",
-      "icon": "menu-icon tf-icons bx bx-message-dots",
-      "slug": "pages-chat"
     }
+
   ]
 }
