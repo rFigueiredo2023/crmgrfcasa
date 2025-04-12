@@ -40,6 +40,14 @@
                           <li>
                               <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);"
                                  data-bs-toggle="modal"
+                                 data-bs-target="#modalHistoricoCliente"
+                                 data-cliente-id="{{ $cliente->id }}">
+                                  <i class="bx bx-history me-2"></i> Histórico
+                              </a>
+                          </li>
+                          <li>
+                              <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);"
+                                 data-bs-toggle="modal"
                                  data-bs-target="#modalEditCliente"
                                  data-id="{{ $cliente->id }}">
                                   <i class="bx bx-edit-alt me-2"></i> Editar

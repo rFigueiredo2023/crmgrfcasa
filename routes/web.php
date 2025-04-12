@@ -59,6 +59,8 @@ Route::middleware('web')->group(function () {
             Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit');
             Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update');
             Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
+            Route::get('/clientes/{cliente}/historico', [ClienteController::class, 'historico'])->name('clientes.historico');
+            Route::post('/clientes/{cliente}/historico', [ClienteController::class, 'storeHistorico'])->name('clientes.historico.store');
 
             // Transportadoras
             Route::post('/transportadoras', [TransportadoraController::class, 'store'])->name('transportadoras.store');
@@ -80,6 +82,7 @@ Route::middleware('web')->group(function () {
 
         // Leads
         Route::prefix('leads')->group(function () {
+            Route::get('/', [LeadController::class, 'index'])->name('leads.index');
             Route::post('/', [LeadController::class, 'store'])->name('leads.store');
             Route::put('/{lead}', [LeadController::class, 'update'])->name('leads.update');
             Route::delete('/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');

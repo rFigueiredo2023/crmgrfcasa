@@ -161,6 +161,7 @@
 @endsection
 
 @push('modals')
+    @include('components.modal-historico-cliente')
     <!-- Modal de Adição -->
     <div class="modal fade" id="modalAddCliente" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-simple">

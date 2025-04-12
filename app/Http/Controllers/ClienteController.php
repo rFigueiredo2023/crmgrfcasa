@@ -112,4 +112,55 @@ class ClienteController extends Controller
         $cliente->delete();
         return redirect()->back()->with('success', 'Cliente excluído com sucesso!');
     }
+
+    public function historico(Cliente $cliente)
+    {
+        $historicos = $cliente->historicos()->with('usuario')->orderBy('data', 'desc')->get()->map(function($historico) {
+            return [
+                'data' => $historico->data->format('d/m/Y H:i'),
+                'vendedora' => $historico->usuario->name,
+                'texto' => $historico->texto,
+                'proxima_acao' => $historico->proxima_acao
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'cliente' => [
+                'razao_social' => $cliente->razao_social,
+                'cnpj' => $cliente->cnpj,
+                'telefone' => $cliente->telefone,
+                'contato' => $cliente->contato,
+                'endereco' => $cliente->endereco,
+                'vendedora' => $cliente->vendedor->name ?? 'Não atribuído'
+            ],
+            'historicos' => $historicos
+        ]);
+    }
+
+    public function storeHistorico(Request $request, Cliente $cliente)
+    {
+        $validated = $request->validate([
+            'texto' => 'required|string',
+            'proxima_acao' => 'nullable|string'
+        ]);
+
+        $historico = $cliente->historicos()->create([
+            'user_id' => auth()->id(),
+            'data' => now(),
+            'texto' => $validated['texto'],
+            'proxima_acao' => $validated['proxima_acao']
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Histórico registrado com sucesso!',
+            'historico' => [
+                'data' => $historico->data->format('d/m/Y H:i'),
+                'vendedora' => auth()->user()->name,
+                'texto' => $historico->texto,
+                'proxima_acao' => $historico->proxima_acao
+            ]
+        ]);
+    }
 }

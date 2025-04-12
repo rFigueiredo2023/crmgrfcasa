@@ -26,6 +26,7 @@
                         <th>Email</th>
                         <th>Origem</th>
                         <th>Status</th>
+                        <th>Vendedora Responsável</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -41,6 +42,7 @@
                                 {{ $lead->status }}
                             </span>
                         </td>
+                        <td>{{ $lead->vendedora->name ?? 'Não atribuído' }}</td>
                         <td>
                             <div class="dropdown">
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -73,6 +75,7 @@
     </div>
 </div>
 
+@push('modals')
 <!-- Modal Novo Lead -->
 <div class="modal fade" id="modalNovoLead" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -120,6 +123,15 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Vendedora Responsável</label>
+                        <select class="form-select" name="user_id">
+                            <option value="">Selecione a vendedora</option>
+                            @foreach(\App\Models\User::where('role', 'vendas')->get() as $vendedora)
+                                <option value="{{ $vendedora->id }}">{{ $vendedora->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Observações</label>
                         <textarea class="form-control" name="observacoes" rows="3"></textarea>
                     </div>
@@ -132,6 +144,7 @@
         </div>
     </div>
 </div>
+@endpush
 
 @push('scripts')
 <script>

@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class LeadController extends Controller
 {
+    public function index()
+    {
+        $leads = Lead::with('usuario')->get();
+        return view('content.pages.leads.pages-leads', compact('leads'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

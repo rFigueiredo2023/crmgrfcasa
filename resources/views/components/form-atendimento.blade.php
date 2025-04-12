@@ -17,11 +17,7 @@
                             <label class="form-label">Cliente</label>
                             <input type="text" class="form-control" id="cliente_nome" readonly>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Data do Atendimento</label>
-                            <input type="datetime-local" class="form-control" name="data_atendimento" required>
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label class="form-label">Tipo de Atendimento</label>
                             <select class="form-select" name="tipo_atendimento" required>
                                 <option value="">Selecione o tipo</option>

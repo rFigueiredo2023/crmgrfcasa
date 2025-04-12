@@ -15,6 +15,12 @@ class Lead extends Model
         'email',
         'origem',
         'status',
-        'observacoes'
+        'observacoes',
+        'user_id'
     ];
+
+    public function vendedora()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

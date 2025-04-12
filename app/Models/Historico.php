@@ -5,24 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Atendimento extends Model
+class Historico extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'cliente_id',
-        'vendedor_id',
-        'data_atendimento',
-        'tipo_atendimento',
-        'descricao',
-        'status',
-        'proxima_acao',
+        'user_id',
         'data',
-        'user_id'
+        'texto',
+        'proxima_acao'
     ];
 
     protected $casts = [
-        'data_atendimento' => 'datetime'
+        'data' => 'datetime'
     ];
 
     public function cliente()
@@ -30,8 +26,8 @@ class Atendimento extends Model
         return $this->belongsTo(Cliente::class);
     }
 
-    public function vendedor()
+    public function usuario()
     {
-        return $this->belongsTo(User::class, 'vendedor_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 } 

@@ -22,22 +22,24 @@ class AtendimentoController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'data_atendimento' => 'required|date',
-            'tipo_atendimento' => 'required|string',
+            'tipo' => 'required|string',
             'descricao' => 'required|string',
-            'status' => 'required|string',
+            'proxima_acao' => 'nullable|string',
+            'data' => 'required|date',
+            'status' => 'required|string'
         ]);
 
-        $atendimento = new Atendimento();
-        $atendimento->cliente_id = $request->cliente_id;
-        $atendimento->vendedor_id = auth()->id();
-        $atendimento->data_atendimento = $request->data_atendimento;
-        $atendimento->tipo_atendimento = $request->tipo_atendimento;
-        $atendimento->descricao = $request->descricao;
-        $atendimento->status = $request->status;
-        $atendimento->save();
+        $atendimento = Atendimento::create([
+            'cliente_id' => $validated['cliente_id'],
+            'user_id' => auth()->id(),
+            'tipo' => $validated['tipo'],
+            'descricao' => $validated['descricao'],
+            'proxima_acao' => $validated['proxima_acao'],
+            'data' => $validated['data'],
+            'status' => $validated['status']
+        ]);
 
         return redirect()->route('atendimentos.index')->with('success', 'Atendimento registrado com sucesso!');
     }
@@ -57,5 +59,20 @@ class AtendimentoController extends Controller
 
         $atendimentos = $query->with(['vendedor', 'cliente'])->get();
         return view('content.pages.atendimentos.pages-atendimentos', compact('atendimentos'));
+    }
+
+    public function update(Request $request, Atendimento $atendimento)
+    {
+        $validated = $request->validate([
+            'tipo' => 'required|string',
+            'descricao' => 'required|string',
+            'proxima_acao' => 'nullable|string',
+            'data' => 'required|date',
+            'status' => 'required|string'
+        ]);
+
+        $atendimento->update($validated);
+
+        return redirect()->route('atendimentos.index')->with('success', 'Atendimento atualizado com sucesso!');
     }
 }

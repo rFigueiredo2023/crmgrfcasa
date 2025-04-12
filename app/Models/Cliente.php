@@ -44,4 +44,9 @@ class Cliente extends Model
     {
         return $this->hasOne(Atendimento::class)->latest();
     }
+
+    public function historicos()
+    {
+        return $this->hasMany(Historico::class)->orderBy('data', 'desc');
+    }
 }
