@@ -10,12 +10,17 @@ return new class extends Migration
     {
         Schema::create('atendimentos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cliente_id')->constrained('clientes');
-            $table->foreignId('vendedor_id')->constrained('users');
-            $table->dateTime('data_atendimento');
-            $table->string('tipo_atendimento');
+            $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('tipo');
             $table->text('descricao');
-            $table->string('status');
+            $table->string('retorno')->nullable();
+            $table->dateTime('data_retorno')->nullable();
+            $table->text('proxima_acao')->nullable();
+            $table->dateTime('data_proxima_acao')->nullable();
+            $table->boolean('ativar_lembrete')->default(false);
+            $table->string('anexo')->nullable();
+            $table->string('status')->default('Aberto');
             $table->timestamps();
         });
     }

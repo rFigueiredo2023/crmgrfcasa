@@ -13,12 +13,16 @@ class Historico extends Model
         'cliente_id',
         'user_id',
         'data',
+        'tipo',
         'texto',
-        'proxima_acao'
+        'proxima_acao',
+        'data_proxima_acao',
+        'anexo'
     ];
 
     protected $casts = [
-        'data' => 'datetime'
+        'data' => 'datetime',
+        'data_proxima_acao' => 'date'
     ];
 
     public function cliente()

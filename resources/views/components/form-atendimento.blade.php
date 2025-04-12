@@ -37,8 +37,64 @@
                             </select>
                         </div>
                         <div class="col-12">
+                            <label class="form-label">Tipo de Contato</label>
+                            <select class="form-select" name="tipo" required>
+                                <option value="">Selecione o tipo...</option>
+                                <option value="Ligação">Ligação</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                                <option value="E-mail">E-mail</option>
+                                <option value="Visita">Visita</option>
+                                <option value="Reunião">Reunião</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
                             <label class="form-label">Descrição</label>
                             <textarea class="form-control" name="descricao" rows="4" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="bx bx-message-square-dots me-1"></i> Retorno
+                            </label>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <textarea class="form-control" name="retorno" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="date" class="form-control" name="data_retorno">
+                                </div>
+                            </div>
+                            <div class="form-text">Registre o retorno do cliente e a data</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="bx bx-calendar-exclamation me-1"></i> Próxima Ação
+                            </label>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <textarea class="form-control" name="proxima_acao" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="date" class="form-control" name="data_proxima_acao">
+                                </div>
+                            </div>
+                            <div class="form-text">Defina a próxima ação e sua data prevista</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" name="ativar_lembrete">
+                                <label class="form-check-label">
+                                    <i class="bx bx-bell me-1"></i> Ativar lembrete
+                                </label>
+                                <div class="form-text">Receba notificações quando a data prevista chegar</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="bx bx-paperclip me-1"></i> Anexo
+                            </label>
+                            <input type="file" class="form-control" name="anexo" accept=".pdf,.jpg,.jpeg,.png,.gif">
+                            <div class="form-text">Arquivos permitidos: PDF, JPG, PNG, GIF (máx. 5MB)</div>
                         </div>
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary me-sm-3 me-1">Salvar</button>

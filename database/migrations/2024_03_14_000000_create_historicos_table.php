@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->dateTime('data');
+            $table->string('tipo');
             $table->text('texto');
             $table->string('proxima_acao')->nullable();
             $table->timestamps();

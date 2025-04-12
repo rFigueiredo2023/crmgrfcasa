@@ -11,18 +11,22 @@ class Atendimento extends Model
 
     protected $fillable = [
         'cliente_id',
-        'vendedor_id',
-        'data_atendimento',
-        'tipo_atendimento',
+        'user_id',
+        'tipo',
         'descricao',
-        'status',
+        'retorno',
+        'data_retorno',
         'proxima_acao',
-        'data',
-        'user_id'
+        'data_proxima_acao',
+        'ativar_lembrete',
+        'anexo',
+        'status'
     ];
 
     protected $casts = [
-        'data_atendimento' => 'datetime'
+        'data_retorno' => 'datetime',
+        'data_proxima_acao' => 'datetime',
+        'ativar_lembrete' => 'boolean'
     ];
 
     public function cliente()
@@ -32,6 +36,6 @@ class Atendimento extends Model
 
     public function vendedor()
     {
-        return $this->belongsTo(User::class, 'vendedor_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 } 

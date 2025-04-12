@@ -142,12 +142,14 @@ class ClienteController extends Controller
     {
         $validated = $request->validate([
             'texto' => 'required|string',
+            'tipo' => 'required|string|in:Ligação,WhatsApp,E-mail,Visita,Reunião,Outro',
             'proxima_acao' => 'nullable|string'
         ]);
 
         $historico = $cliente->historicos()->create([
             'user_id' => auth()->id(),
             'data' => now(),
+            'tipo' => $validated['tipo'],
             'texto' => $validated['texto'],
             'proxima_acao' => $validated['proxima_acao']
         ]);
@@ -158,6 +160,7 @@ class ClienteController extends Controller
             'historico' => [
                 'data' => $historico->data->format('d/m/Y H:i'),
                 'vendedora' => auth()->user()->name,
+                'tipo' => $historico->tipo,
                 'texto' => $historico->texto,
                 'proxima_acao' => $historico->proxima_acao
             ]

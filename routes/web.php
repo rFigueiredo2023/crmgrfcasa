@@ -76,6 +76,7 @@ Route::middleware('web')->group(function () {
             Route::get('/', [AtendimentoController::class, 'index'])->name('atendimentos.index');
             Route::post('/', [AtendimentoController::class, 'store'])->name('atendimentos.store');
             Route::get('/search', [AtendimentoController::class, 'search'])->name('atendimentos.search');
+            Route::post('/lead-com-atendimento', [AtendimentoController::class, 'storeLeadComAtendimento'])->name('atendimentos.store-lead');
         });
 
         Route::get('/atendimentos', [AtendimentoController::class, 'index'])->name('atendimentos.index');
@@ -87,6 +88,12 @@ Route::middleware('web')->group(function () {
             Route::put('/{lead}', [LeadController::class, 'update'])->name('leads.update');
             Route::delete('/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
         });
+
+        // Rotas de Leads
+        Route::get('/leads', [LeadController::class, 'index'])->name('leads.index');
+        Route::get('/leads/{lead}/historico', [LeadController::class, 'historico'])->name('leads.historico');
+        Route::post('/leads/{lead}/historico', [LeadController::class, 'storeHistorico'])->name('leads.historico.store');
+        Route::post('/leads/{lead}/converter', [LeadController::class, 'converter'])->name('leads.converter');
     });
 });
 

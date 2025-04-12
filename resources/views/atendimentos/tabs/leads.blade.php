@@ -90,7 +90,17 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Nome/Empresa</label>
-                            <input type="text" class="form-control" name="nome" required>
+                            <input type="text" class="form-control" name="nome_empresa" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">CNPJ</label>
+                            <input type="text" class="form-control cnpj-mask" name="cnpj">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Inscrição Estadual</label>
+                            <input type="text" class="form-control" name="ie">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Telefone</label>
@@ -98,42 +108,47 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Endereço</label>
+                            <input type="text" class="form-control" name="endereco">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Código IBGE</label>
+                            <input type="text" class="form-control" name="codigo_ibge">
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" required>
+                            <label class="form-label">Contato</label>
+                            <input type="text" class="form-control" name="contato" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Origem</label>
-                            <select class="form-select" name="origem" required>
-                                <option value="">Selecione a origem</option>
-                                <option value="Site">Site</option>
-                                <option value="Indicação">Indicação</option>
-                                <option value="Redes Sociais">Redes Sociais</option>
-                                <option value="Outros">Outros</option>
+                            <label class="form-label">Vendedora Responsável</label>
+                            <select class="form-select" name="user_id">
+                                <option value="">Selecione a vendedora</option>
+                                @foreach(\App\Models\User::where('role', 'vendas')->get() as $vendedora)
+                                    <option value="{{ $vendedora->id }}">{{ $vendedora->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status" required>
-                            <option value="">Selecione o status</option>
-                            <option value="Frio">Frio</option>
-                            <option value="Morno">Morno</option>
-                            <option value="Quente">Quente</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data da Próxima Ação</label>
+                            <input type="date" class="form-control" name="data_proxima_acao">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data de Retorno</label>
+                            <input type="date" class="form-control" name="data_retorno">
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Vendedora Responsável</label>
-                        <select class="form-select" name="user_id">
-                            <option value="">Selecione a vendedora</option>
-                            @foreach(\App\Models\User::where('role', 'vendas')->get() as $vendedora)
-                                <option value="{{ $vendedora->id }}">{{ $vendedora->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Observações</label>
-                        <textarea class="form-control" name="observacoes" rows="3"></textarea>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ativar_lembrete" id="ativar_lembrete">
+                            <label class="form-check-label" for="ativar_lembrete">
+                                Ativar lembrete
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -155,6 +170,20 @@
             if (value.length <= 11) {
                 value = value.replace(/(\d{2})(\d)/, '($1) $2');
                 value = value.replace(/(\d{4,5})(\d)/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+    });
+
+    // Máscara para CNPJ
+    document.querySelectorAll('.cnpj-mask').forEach(function(element) {
+        element.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 14) {
+                value = value.replace(/(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
                 e.target.value = value;
             }
         });

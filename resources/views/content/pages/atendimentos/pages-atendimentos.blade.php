@@ -8,7 +8,8 @@
         'resources/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.scss',
         'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss',
         'resources/assets/vendor/libs/select2/select2.scss',
-        'resources/assets/vendor/libs/@form-validation/form-validation.scss'
+        'resources/assets/vendor/libs/@form-validation/form-validation.scss',
+        'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss'
     ])
 @endsection
 
@@ -21,7 +22,8 @@
         'resources/assets/vendor/libs/@form-validation/bootstrap5.js',
         'resources/assets/vendor/libs/@form-validation/auto-focus.js',
         'resources/assets/vendor/libs/cleavejs/cleave.js',
-        'resources/assets/vendor/libs/cleavejs/cleave-phone.js'
+        'resources/assets/vendor/libs/cleavejs/cleave-phone.js',
+        'resources/assets/vendor/libs/sweetalert2/sweetalert2.js'
     ])
 @endsection
 
@@ -36,50 +38,58 @@
 @endsection
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
 
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    <!-- Pills Nav Tabs -->
-    <div class="nav-align-top mb-4">
-        <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
-            <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#aba-cliente" aria-controls="aba-cliente" aria-selected="true">
-                    <i class="bx bx-user icon-sm me-1"></i>Cliente
-                </button>
-            </li>
-            <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#aba-leads" aria-controls="aba-leads" aria-selected="false">
-                    <i class="bx bx-bulb icon-sm me-1"></i>Leads
-                </button>
-            </li>
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
         </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
 
-        <div class="tab-content">
-            <!-- ABA CLIENTE -->
-            <div class="tab-pane fade show active" id="aba-cliente" role="tabpanel">
-                @include('atendimentos.tabs.cliente')
-            </div>
-
-            <!-- ABA LEADS -->
-            <div class="tab-pane fade" id="aba-leads" role="tabpanel">
-                @include('atendimentos.tabs.leads')
+<!-- Pills Nav -->
+<div class="nav-align-top mb-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Atendimentos</h5>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoLeadAtendimento">
+                <i class="bx bx-plus me-1"></i> Novo Lead
+            </button>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-pills mb-3 nav-fill" role="tablist">
+                <li class="nav-item">
+                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-clientes" aria-controls="navs-clientes" aria-selected="true">
+                        <i class="bx bx-user me-1"></i> Clientes
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-leads" aria-controls="navs-leads" aria-selected="false">
+                        <i class="bx bx-bulb me-1"></i> Leads
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="navs-clientes" role="tabpanel">
+                    @include('atendimentos.tabs.cliente')
+                </div>
+                <div class="tab-pane fade" id="navs-leads" role="tabpanel">
+                    @include('atendimentos.tabs.leads')
+                </div>
             </div>
         </div>
     </div>
-    <!-- /Pills Nav Tabs -->
+</div>
+<!-- / Pills Nav -->
+
+@include('components.form-lead-atendimento')
 @endsection
