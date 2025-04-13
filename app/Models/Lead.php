@@ -38,4 +38,9 @@ class Lead extends Model
     {
         return $this->morphMany(Historico::class, 'historicoable');
     }
+
+    public function ultimoAtendimento()
+    {
+        return $this->morphOne(Historico::class, 'historicoable')->latest('data');
+    }
 }

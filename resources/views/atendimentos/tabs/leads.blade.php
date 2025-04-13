@@ -1,8 +1,8 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Lista de Leads</h5>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoLead">
-            <i class="bx bx-plus"></i> Novo Lead
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoLeadAtendimento">
+            <i class="bx bx-plus me-1"></i> Novo Lead
         </button>
     </div>
     <div class="card-body">
@@ -21,52 +21,45 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Nome/Empresa</th>
-                        <th>Telefone</th>
-                        <th>Email</th>
-                        <th>Origem</th>
-                        <th>Status</th>
-                        <th>Vendedora Responsável</th>
-                        <th>Ações</th>
+                        <th>RAZÃO SOCIAL</th>
+                        <th>CNPJ</th>
+                        <th>TELEFONE</th>
+                        <th>CONTATO</th>
+                        <th>ÚLTIMO ATENDIMENTO</th>
+                        <th>VENDEDORA RESPONSÁVEL</th>
+                        <th>ATENDIMENTO</th>
+                        <th>HISTÓRICO</th>
                     </tr>
                 </thead>
                 <tbody class="table-border-bottom-0">
                     @forelse($leads as $lead)
                     <tr>
                         <td>{{ $lead->nome }}</td>
+                        <td>{{ $lead->cnpj }}</td>
                         <td>{{ $lead->telefone }}</td>
-                        <td>{{ $lead->email }}</td>
-                        <td>{{ $lead->origem }}</td>
+                        <td>{{ $lead->contato }}</td>
                         <td>
-                            <span class="badge bg-{{ $lead->status === 'Quente' ? 'danger' : ($lead->status === 'Morno' ? 'warning' : 'info') }}">
-                                {{ $lead->status }}
-                            </span>
+                            @if($lead->ultimoAtendimento)
+                                {{ $lead->ultimoAtendimento->created_at->format('d/m/Y H:i') }}
+                            @else
+                                Nenhum atendimento
+                            @endif
                         </td>
                         <td>{{ $lead->vendedora->name ?? 'Não atribuído' }}</td>
                         <td>
-                            <div class="dropdown">
-                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#modalAtendimento"
-                                       data-lead-id="{{ $lead->id }}" data-lead-nome="{{ $lead->nome }}">
-                                        <i class="bx bx-plus me-1"></i> Novo Atendimento
-                                    </a>
-                                    <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#modalEditarLead"
-                                       data-lead-id="{{ $lead->id }}">
-                                        <i class="bx bx-edit-alt me-1"></i> Editar
-                                    </a>
-                                    <a class="dropdown-item" href="javascript:void(0);" onclick="confirmarExclusao({{ $lead->id }})">
-                                        <i class="bx bx-trash me-1"></i> Excluir
-                                    </a>
-                                </div>
-                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAtendimento" data-lead-id="{{ $lead->id }}" data-lead-nome="{{ $lead->nome }}">
+                                <i class="bx bx-plus"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#modalHistoricoCliente" data-lead-id="{{ $lead->id }}">
+                                <i class="bx bx-history"></i>
+                            </button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center">Nenhum lead encontrado</td>
+                        <td colspan="8" class="text-center">Nenhum lead encontrado</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -74,92 +67,6 @@
         </div>
     </div>
 </div>
-
-@push('modals')
-<!-- Modal Novo Lead -->
-<div class="modal fade" id="modalNovoLead" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Novo Lead</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('leads.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nome/Empresa</label>
-                            <input type="text" class="form-control" name="nome_empresa" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">CNPJ</label>
-                            <input type="text" class="form-control cnpj-mask" name="cnpj">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Inscrição Estadual</label>
-                            <input type="text" class="form-control" name="ie">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Telefone</label>
-                            <input type="text" class="form-control phone-mask" name="telefone" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label class="form-label">Endereço</label>
-                            <input type="text" class="form-control" name="endereco">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Código IBGE</label>
-                            <input type="text" class="form-control" name="codigo_ibge">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contato</label>
-                            <input type="text" class="form-control" name="contato" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Vendedora Responsável</label>
-                            <select class="form-select" name="user_id">
-                                <option value="">Selecione a vendedora</option>
-                                @foreach(\App\Models\User::where('role', 'vendas')->get() as $vendedora)
-                                    <option value="{{ $vendedora->id }}">{{ $vendedora->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Data da Próxima Ação</label>
-                            <input type="date" class="form-control" name="data_proxima_acao">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Data de Retorno</label>
-                            <input type="date" class="form-control" name="data_retorno">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="ativar_lembrete" id="ativar_lembrete">
-                            <label class="form-check-label" for="ativar_lembrete">
-                                Ativar lembrete
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endpush
 
 @push('scripts')
 <script>

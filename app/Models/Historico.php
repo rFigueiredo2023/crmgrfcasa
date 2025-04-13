@@ -10,11 +10,13 @@ class Historico extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cliente_id',
         'user_id',
         'data',
         'tipo',
         'texto',
+        'retorno',
+        'data_retorno',
+        'ativar_lembrete',
         'proxima_acao',
         'data_proxima_acao',
         'anexo'
@@ -22,16 +24,18 @@ class Historico extends Model
 
     protected $casts = [
         'data' => 'datetime',
-        'data_proxima_acao' => 'date'
+        'data_retorno' => 'datetime',
+        'data_proxima_acao' => 'date',
+        'ativar_lembrete' => 'boolean'
     ];
 
-    public function cliente()
+    public function historicoable()
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->morphTo();
     }
 
-    public function usuario()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 } 

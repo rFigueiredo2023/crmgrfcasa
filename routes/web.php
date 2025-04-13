@@ -19,6 +19,7 @@ use App\Http\Controllers\Dashboards\AdminDashboardController;
 use App\Http\Controllers\Dashboards\VendasDashboardController;
 use App\Http\Controllers\Dashboards\FinancialDashboardController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\LeadAtendimentoController;
 
 // Rotas públicas
 Route::middleware('web')->group(function () {
@@ -94,6 +95,11 @@ Route::middleware('web')->group(function () {
         Route::get('/leads/{lead}/historico', [LeadController::class, 'historico'])->name('leads.historico');
         Route::post('/leads/{lead}/historico', [LeadController::class, 'storeHistorico'])->name('leads.historico.store');
         Route::post('/leads/{lead}/converter', [LeadController::class, 'converter'])->name('leads.converter');
+        
+        // Rotas para atendimentos de leads
+        Route::post('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'store'])->name('lead.atendimentos.store');
+        Route::get('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'show'])->name('lead.atendimentos.show');
+        Route::get('/atendimentos/{atendimento}/anexo', [LeadAtendimentoController::class, 'downloadAnexo'])->name('atendimento.anexo.download');
     });
 });
 

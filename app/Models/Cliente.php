@@ -47,6 +47,6 @@ class Cliente extends Model
 
     public function historicos()
     {
-        return $this->hasMany(Historico::class)->orderBy('data', 'desc');
+        return $this->morphMany(Historico::class, 'historicoable');
     }
 }

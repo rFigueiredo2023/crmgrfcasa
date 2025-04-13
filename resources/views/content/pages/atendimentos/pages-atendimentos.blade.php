@@ -61,9 +61,6 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Atendimentos</h5>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoLeadAtendimento">
-                <i class="bx bx-plus me-1"></i> Novo Lead
-            </button>
         </div>
         <div class="card-body">
             <ul class="nav nav-pills mb-3 nav-fill" role="tablist">
@@ -92,4 +89,5 @@
 <!-- / Pills Nav -->
 
 @include('components.form-lead-atendimento')
+@include('components.modal-historico-cliente')
 @endsection
