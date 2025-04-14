@@ -69,8 +69,8 @@
                                     <form id="formNovoHistorico">
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <label class="form-label">Tipo de Atendimento</label>
-                                                <select class="form-select" name="tipo" required>
+                                                <label class="form-label">Tipo de Contato</label>
+                                                <select class="form-select" name="tipo_contato" required>
                                                     <option value="">Selecione...</option>
                                                     <option value="Ligação">Ligação</option>
                                                     <option value="WhatsApp">WhatsApp</option>
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.historicos.forEach(historico => {
                     const li = document.createElement('li');
                     li.className = 'timeline-item';
-                    
+
                     li.innerHTML = `
                         <div class="timeline-indicator">
                             <i class="bx ${getTipoIcon(historico.tipo)}"></i>
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ` : ''}
                         </div>
                     `;
-                    
+
                     timeline.appendChild(li);
                 });
             })
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Submit do formulário de novo histórico
     formNovoHistorico.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const formData = new FormData(this);
 
         fetch(`/leads/${leadId}/historico`, {
@@ -390,4 +390,4 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.85em;
 }
 </style>
-@endpush 
+@endpush

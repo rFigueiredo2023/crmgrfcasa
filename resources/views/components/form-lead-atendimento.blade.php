@@ -25,10 +25,10 @@
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-12">
-                                            <label class="form-label">Nome/Empresa</label>
+                                            <label class="form-label">Razão Social</label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="bx bx-buildings"></i></span>
-                                                <input type="text" class="form-control" name="nome_empresa" required>
+                                                <input type="text" class="form-control" name="razao_social" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -41,8 +41,22 @@
                                         <div class="col-md-6">
                                             <label class="form-label">Inscrição Estadual</label>
                                             <div class="input-group">
-                                                <span class="input-group-text"><i class="bx bx-card"></i></span>
+                                                <span class="input-group-text"><i class="bx bx-id-card"></i></span>
                                                 <input type="text" class="form-control" name="ie">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Endereço</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bx bx-map"></i></span>
+                                                <input type="text" class="form-control" name="endereco">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Código IBGE</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bx bx-map-pin"></i></span>
+                                                <input type="text" class="form-control" name="codigo_ibge">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -52,25 +66,11 @@
                                                 <input type="text" class="form-control phone-mask" name="telefone" required>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-12">
                                             <label class="form-label">Contato</label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="bx bx-user"></i></span>
                                                 <input type="text" class="form-control" name="contato" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-8">
-                                            <label class="form-label">Endereço</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text"><i class="bx bx-map"></i></span>
-                                                <input type="text" class="form-control" name="endereco">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Código IBGE</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text"><i class="bx bx-hash"></i></span>
-                                                <input type="text" class="form-control" name="codigo_ibge">
                                             </div>
                                         </div>
                                     </div>
@@ -90,8 +90,8 @@
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-12">
-                                            <label class="form-label">Tipo de Atendimento</label>
-                                            <select class="form-select" name="tipo" required>
+                                            <label class="form-label">Tipo de Contato</label>
+                                            <select class="form-select" name="tipo_contato" required>
                                                 <option value="">Selecione...</option>
                                                 <option value="Ligação">Ligação</option>
                                                 <option value="WhatsApp">WhatsApp</option>
@@ -174,7 +174,7 @@ $(document).ready(function() {
     // Submit do formulário via AJAX
     $('#formNovoLeadAtendimento').on('submit', function(e) {
         e.preventDefault();
-        
+
         var form = $(this);
         var formData = new FormData(this);
 
@@ -193,29 +193,27 @@ $(document).ready(function() {
                 if (response.success) {
                     // Fecha o modal
                     $('#modalNovoLeadAtendimento').modal('hide');
-                    
+
                     // Limpa o formulário
                     form[0].reset();
-                    
-                    // Mostra mensagem de sucesso
+
+                    // Mostra mensagem de sucesso e depois redireciona
                     Swal.fire({
                         icon: 'success',
                         title: 'Sucesso!',
                         text: response.message,
                         showConfirmButton: false,
                         timer: 1500
+                    }).then(function() {
+                        // Redireciona para a página de atendimentos na aba de leads
+                        window.location.href = '/atendimentos?tab=leads';
                     });
-
-                    // Recarrega a página após 1.5 segundos
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
                 }
             },
             error: function(xhr) {
                 var errors = xhr.responseJSON.errors;
                 var errorMessage = '';
-                
+
                 // Formata as mensagens de erro
                 $.each(errors, function(key, value) {
                     errorMessage += value[0] + '<br>';
@@ -320,4 +318,4 @@ textarea {
     animation-duration: 0.4s;
 }
 </style>
-@endpush 
+@endpush

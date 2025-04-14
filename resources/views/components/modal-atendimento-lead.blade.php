@@ -11,8 +11,8 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="tipo" class="form-label">Tipo</label>
-                            <select class="form-select" id="tipo" name="tipo" required>
+                            <label for="tipo_contato" class="form-label">Tipo de Contato</label>
+                            <select class="form-select" id="tipo_contato" name="tipo_contato" required>
                                 <option value="">Selecione...</option>
                                 <option value="Ligação">Ligação</option>
                                 <option value="WhatsApp">WhatsApp</option>
@@ -58,15 +58,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const formAtendimentoLead = document.getElementById('formAtendimentoLead');
-    
+
     formAtendimentoLead.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const leadId = this.getAttribute('data-lead-id');
         this.action = `/leads/${leadId}/atendimento`;
-        
+
         const formData = new FormData(this);
-        
+
         fetch(this.action, {
             method: 'POST',
             body: formData,
@@ -80,15 +80,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Fechar o modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalAtendimentoLead'));
                 modal.hide();
-                
+
                 // Limpar o formulário
                 formAtendimentoLead.reset();
-                
+
                 // Atualizar a timeline (se existir)
                 if (typeof updateTimeline === 'function') {
                     updateTimeline();
                 }
-                
+
                 // Mostrar mensagem de sucesso
                 Swal.fire({
                     icon: 'success',
@@ -113,4 +113,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script> 
+</script>

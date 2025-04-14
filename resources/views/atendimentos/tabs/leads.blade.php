@@ -34,7 +34,7 @@
                 <tbody class="table-border-bottom-0">
                     @forelse($leads as $lead)
                     <tr>
-                        <td>{{ $lead->nome }}</td>
+                        <td>{{ $lead->razao_social }}</td>
                         <td>{{ $lead->cnpj }}</td>
                         <td>{{ $lead->telefone }}</td>
                         <td>{{ $lead->contato }}</td>
@@ -45,9 +45,9 @@
                                 Nenhum atendimento
                             @endif
                         </td>
-                        <td>{{ $lead->vendedora->name ?? 'Não atribuído' }}</td>
+                        <td>{{ $lead->vendedor->name ?? 'Não atribuído' }}</td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAtendimento" data-lead-id="{{ $lead->id }}" data-lead-nome="{{ $lead->nome }}">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAtendimento" data-lead-id="{{ $lead->id }}" data-lead-nome="{{ $lead->razao_social }}">
                                 <i class="bx bx-plus"></i>
                             </button>
                         </td>

@@ -6,23 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('atendimentos', function (Blueprint $table) {
-            $table->string('proxima_acao')->nullable();
+            $table->text('retorno')->nullable()->after('descricao');
+            $table->dateTime('data_retorno')->nullable()->after('retorno');
+            $table->text('proxima_acao')->nullable()->after('data_retorno');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('atendimentos', function (Blueprint $table) {
-            $table->dropColumn('proxima_acao');
+            $table->dropColumn(['retorno', 'data_retorno', 'proxima_acao']);
         });
     }
 };
