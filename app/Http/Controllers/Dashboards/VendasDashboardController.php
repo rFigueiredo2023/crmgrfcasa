@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboards;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class VendasDashboardController extends Controller
@@ -13,10 +14,13 @@ class VendasDashboardController extends Controller
      */
     public function index(): View
     {
-        if (!auth()->check() || auth()->user()->role !== 'vendas') {
-            abort(403, 'Acesso não autorizado.');
-        }
+        $user = auth()->user();
+        Log::info('Acessando dashboard de vendas', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'user_role' => $user->role
+        ]);
 
-        return view('dashboards.vendas');
+        return view('content.pages.dashboard-vendas');
     }
 }

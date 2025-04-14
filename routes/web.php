@@ -46,9 +46,17 @@ Route::middleware('web')->group(function () {
         });
 
         // Dashboards
-        Route::get('/admin', [AdminDashboardController::class, 'index'])->name('dashboard.admin');
-        Route::get('/vendas', [VendasDashboardController::class, 'index'])->name('dashboard.vendas');
-        Route::get('/financeiro', [FinancialDashboardController::class, 'index'])->name('dashboard.financeiro');
+        Route::get('/admin', [AdminDashboardController::class, 'index'])
+            ->name('dashboard.admin')
+            ->middleware('auth');
+            
+        Route::get('/vendas', [VendasDashboardController::class, 'index'])
+            ->name('dashboard.vendas')
+            ->middleware('vendas');
+          
+        Route::get('/financeiro', [FinancialDashboardController::class, 'index'])
+            ->name('dashboard.financeiro')
+            ->middleware('financeiro');
 
         // Customers
         Route::prefix('customers')->group(function () {

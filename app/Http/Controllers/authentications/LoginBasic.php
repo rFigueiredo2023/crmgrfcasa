@@ -58,13 +58,13 @@ class LoginBasic extends Controller
   {
       switch ($user->role) {
           case 'admin':
-              return redirect()->intended('/admin');
+              return redirect()->route('dashboard.admin');
           case 'vendas':
-              return redirect()->intended('/vendas');
+              return redirect()->route('dashboard.vendas');
           case 'financeiro':
-              return redirect()->intended('/financeiro');
+              return redirect()->route('dashboard.financeiro');
           default:
-              return redirect('/login');
+              return redirect()->route('login');
       }
   }
 }

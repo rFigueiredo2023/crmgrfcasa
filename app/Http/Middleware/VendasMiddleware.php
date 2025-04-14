@@ -16,8 +16,12 @@ class VendasMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !Auth::user()->isVendas()) {
-            abort(403, 'Acesso não autorizado.');
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        if (Auth::user()->role !== 'vendas') {
+            abort(403, 'Acesso não autorizado. Esta área é restrita para vendedores.');
         }
 
         return $next($request);
