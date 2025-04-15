@@ -166,4 +166,32 @@ class ClienteController extends Controller
             ]
         ]);
     }
+
+    public function atendimentos(Cliente $cliente)
+    {
+        $atendimentos = $cliente->atendimentos()
+            ->with('vendedor')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($atendimento) {
+                return [
+                    'id' => $atendimento->id,
+                    'tipo_contato' => $atendimento->tipo_contato,
+                    'status' => $atendimento->status,
+                    'descricao' => $atendimento->descricao,
+                    'retorno' => $atendimento->retorno,
+                    'data_retorno' => $atendimento->data_retorno,
+                    'proxima_acao' => $atendimento->proxima_acao,
+                    'data_proxima_acao' => $atendimento->data_proxima_acao,
+                    'anexo' => $atendimento->anexo,
+                    'created_at' => $atendimento->created_at,
+                    'vendedor' => [
+                        'id' => $atendimento->vendedor->id,
+                        'name' => $atendimento->vendedor->name
+                    ]
+                ];
+            });
+
+        return response()->json($atendimentos);
+    }
 }

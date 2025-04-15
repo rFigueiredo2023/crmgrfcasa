@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class AtendimentoController extends Controller
 {
@@ -271,6 +273,112 @@ class AtendimentoController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao registrar lead e atendimento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Retorna todos os atendimentos de um cliente específico
+     *
+     * @param int $cliente_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAtendimentosByCliente($cliente_id)
+    {
+        try {
+            $atendimentos = Atendimento::where('cliente_id', $cliente_id)
+                ->select([
+                    'id',
+                    'tipo_contato',
+                    'descricao',
+                    'retorno',
+                    'data_retorno',
+                    'proxima_acao',
+                    'data_proxima_acao',
+                    'ativar_lembrete',
+                    'status',
+                    'created_at'
+                ])
+                ->orderBy('created_at', 'DESC')
+                ->get()
+                ->map(function ($atendimento) {
+                    return [
+                        'id' => $atendimento->id,
+                        'tipo_contato' => $atendimento->tipo_contato,
+                        'descricao' => $atendimento->descricao,
+                        'retorno' => $atendimento->retorno,
+                        'data_retorno' => $atendimento->data_retorno ?
+                            Carbon::parse($atendimento->data_retorno)->format('d/m/Y H:i') : null,
+                        'proxima_acao' => $atendimento->proxima_acao,
+                        'data_proxima_acao' => $atendimento->data_proxima_acao ?
+                            Carbon::parse($atendimento->data_proxima_acao)->format('d/m/Y H:i') : null,
+                        'ativar_lembrete' => $atendimento->ativar_lembrete,
+                        'status' => $atendimento->status,
+                        'created_at' => Carbon::parse($atendimento->created_at)->format('d/m/Y H:i')
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $atendimentos
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao buscar atendimentos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Retorna os atendimentos de um cliente específico
+     *
+     * @param Cliente $cliente
+     * @return JsonResponse
+     */
+    public function getByCliente(Cliente $cliente): JsonResponse
+    {
+        try {
+            $atendimentos = Atendimento::where('cliente_id', $cliente->id)
+                ->select([
+                    'tipo_contato',
+                    'descricao',
+                    'retorno',
+                    'data_retorno',
+                    'proxima_acao',
+                    'data_proxima_acao',
+                    'ativar_lembrete',
+                    'status',
+                    'created_at'
+                ])
+                ->orderBy('created_at', 'DESC')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $atendimentos->map(function ($atendimento) {
+                    return [
+                        'tipo_contato' => $atendimento->tipo_contato,
+                        'descricao' => $atendimento->descricao,
+                        'retorno' => $atendimento->retorno,
+                        'data_retorno' => $atendimento->data_retorno ?
+                            Carbon::parse($atendimento->data_retorno)->format('d/m/Y H:i') : null,
+                        'proxima_acao' => $atendimento->proxima_acao,
+                        'data_proxima_acao' => $atendimento->data_proxima_acao ?
+                            Carbon::parse($atendimento->data_proxima_acao)->format('d/m/Y H:i') : null,
+                        'ativar_lembrete' => $atendimento->ativar_lembrete,
+                        'status' => $atendimento->status,
+                        'created_at' => Carbon::parse($atendimento->created_at)->format('d/m/Y H:i')
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao buscar atendimentos do cliente',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

@@ -49,11 +49,11 @@ Route::middleware('web')->group(function () {
         Route::get('/admin', [AdminDashboardController::class, 'index'])
             ->name('dashboard.admin')
             ->middleware('auth');
-            
+
         Route::get('/vendas', [VendasDashboardController::class, 'index'])
             ->name('dashboard.vendas')
             ->middleware('vendas');
-          
+
         Route::get('/financeiro', [FinancialDashboardController::class, 'index'])
             ->name('dashboard.financeiro')
             ->middleware('financeiro');
@@ -70,6 +70,8 @@ Route::middleware('web')->group(function () {
             Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
             Route::get('/clientes/{cliente}/historico', [ClienteController::class, 'historico'])->name('clientes.historico');
             Route::post('/clientes/{cliente}/historico', [ClienteController::class, 'storeHistorico'])->name('clientes.historico.store');
+            Route::get('/api/clientes/{cliente}/atendimentos', [ClienteController::class, 'atendimentos'])
+                ->name('clientes.atendimentos');
 
             // Transportadoras
             Route::post('/transportadoras', [TransportadoraController::class, 'store'])->name('transportadoras.store');
@@ -103,7 +105,7 @@ Route::middleware('web')->group(function () {
         Route::get('/leads/{lead}/historico', [LeadController::class, 'historico'])->name('leads.historico');
         Route::post('/leads/{lead}/historico', [LeadController::class, 'storeHistorico'])->name('leads.historico.store');
         Route::post('/leads/{lead}/converter', [LeadController::class, 'converter'])->name('leads.converter');
-        
+
         // Rotas para atendimentos de leads
         Route::post('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'store'])->name('lead.atendimentos.store');
         Route::get('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'show'])->name('lead.atendimentos.show');
