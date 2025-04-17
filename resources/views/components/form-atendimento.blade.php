@@ -1,14 +1,13 @@
+@push('modals')
 <!-- Modal de Novo Atendimento -->
-<div class="modal fade" id="modalAtendimento" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-simple modal-dialog-centered">
-        <div class="modal-content p-3 p-md-5">
-            <div class="modal-body">
+<div class="modal fade" id="modalAtendimento" tabindex="-1" aria-labelledby="modalAtendimentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAtendimentoLabel">Novo Atendimento</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="text-center mb-4">
-                    <h3 class="mb-2">Novo Atendimento</h3>
-                    <p class="text-muted">Preencha os dados do atendimento</p>
-                </div>
-
+            </div>
+            <div class="modal-body">
                 <form id="formAtendimento" action="{{ route('atendimentos.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="cliente_id" id="cliente_id">
@@ -18,7 +17,7 @@
                             <label class="form-label">Cliente</label>
                             <input type="text" class="form-control" id="cliente_nome" readonly>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <label class="form-label">Status</label>
                             <select class="form-select" name="status" required>
                                 <option value="">Selecione o status</option>
@@ -27,7 +26,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label">Tipo de Contato</label>
                             <select class="form-select" name="tipo_contato" required>
                                 <option value="">Selecione o tipo...</option>
@@ -57,7 +56,7 @@
                             </div>
                             <div class="form-text">Registre o retorno do cliente e a data</div>
                         </div>
-                        <div class="col-12"></div>
+                        <div class="col-12">
                             <label class="form-label">
                                 <i class="bx bx-calendar-exclamation me-1"></i> Próxima Ação
                             </label>
@@ -88,35 +87,80 @@
                             <input type="file" class="form-control" name="anexo" accept=".pdf,.jpg,.jpeg,.png,.gif">
                             <div class="form-text">Arquivos permitidos: PDF, JPG, PNG, GIF (máx. 5MB)</div>
                         </div>
-                        <div class="col-12 text-center">
-                            <button type="submit" class="btn btn-primary me-sm-3 me-1">Salvar</button>
-                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+@endpush
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('#formAtendimento');
     const modal = document.getElementById('modalAtendimento');
-    const modalInstance = new bootstrap.Modal(modal);
 
+    // Registrar log para verificar se o modal existe
+    console.log('Modal de Atendimento encontrado:', modal ? 'Sim' : 'Não');
+
+    // Inicializar modal com opções que podem ajudar com problemas de foco
+    let modalInstance;
+    try {
+        modalInstance = new bootstrap.Modal(modal, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        console.log('Modal inicializado com sucesso');
+    } catch (e) {
+        console.error('Erro ao inicializar modal:', e);
+    }
+
+    // Eventos para debugging de visibilidade
     modal.addEventListener('show.bs.modal', function(event) {
+        console.log('Evento show.bs.modal acionado');
+
         const button = event.relatedTarget;
-        const clienteId = button.getAttribute('data-cliente-id');
-        const clienteNome = button.getAttribute('data-cliente-nome');
 
-        document.getElementById('cliente_id').value = clienteId;
-        document.getElementById('cliente_nome').value = clienteNome;
+        // Tenta obter valores para cliente ou lead
+        let id, nome, tipo = 'cliente';
 
-        // Atualiza a data do atendimento para o momento atual
-        const now = new Date().toISOString();
-        document.querySelector('input[name="data_atendimento"]').value = now;
+        if (button) {
+            id = button.getAttribute('data-cliente-id') || button.getAttribute('data-id');
+            nome = button.getAttribute('data-cliente-nome') || button.getAttribute('data-nome');
+
+            if (button.getAttribute('data-tipo') === 'lead' || button.getAttribute('data-lead-id')) {
+                tipo = 'lead';
+            }
+        } else {
+            // Caso o modal seja aberto via jQuery
+            id = document.getElementById('cliente_id').value;
+            nome = document.getElementById('cliente_nome').value;
+        }
+
+        // Verifica se os dados existem
+        if (!id || !nome) {
+            console.error('ID ou nome não encontrados');
+            return;
+        }
+
+        document.getElementById('cliente_id').value = id;
+        document.getElementById('cliente_nome').value = nome;
+
+        // Armazena o tipo para uso no envio do formulário
+        form.setAttribute('data-tipo', tipo);
+
+        console.log('Configuração do modal concluída - ID:', id, 'Nome:', nome, 'Tipo:', tipo);
+    });
+
+    // Evento para debugging quando o modal é realmente exibido
+    modal.addEventListener('shown.bs.modal', function() {
+        console.log('Modal completamente visível (shown.bs.modal)');
     });
 
     form.addEventListener('submit', function(e) {
@@ -125,12 +169,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(form);
         const submitButton = form.querySelector('button[type="submit"]');
         const originalText = submitButton.innerHTML;
+        const tipo = form.getAttribute('data-tipo') || 'cliente';
+        const id = document.getElementById('cliente_id').value;
+
+        // Determina a URL com base no tipo (cliente ou lead)
+        let url;
+        if (tipo === 'lead') {
+            url = `/leads/${id}/atendimentos`;
+            console.log('URL para lead:', url);
+        } else {
+            url = form.action; // Usa a URL padrão para clientes
+            console.log('URL para cliente:', url);
+        }
+
+        // Log para depuração
+        console.log(`Enviando formulário como tipo: ${tipo}, ID: ${id}, URL: ${url}`);
 
         // Desabilita o botão e mostra loading
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
 
-        fetch(form.action, {
+        fetch(url, {
             method: 'POST',
             body: formData,
             headers: {
@@ -143,7 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Sucesso
-                modalInstance.hide();
+                if (modalInstance) {
+                    modalInstance.hide();
+                } else if (typeof jQuery !== 'undefined') {
+                    jQuery('#modalAtendimento').modal('hide');
+                }
                 form.reset();
 
                 // Mostra mensagem de sucesso

@@ -47,6 +47,11 @@ class Cliente extends Model
 
     public function historicos()
     {
-        return $this->morphMany(Historico::class, 'historicoable');
+        return $this->morphMany(Historico::class, 'historicable');
+    }
+
+    public function ultimoHistorico()
+    {
+        return $this->morphOne(Historico::class, 'historicable')->latest('data');
     }
 }

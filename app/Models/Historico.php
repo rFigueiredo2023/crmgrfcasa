@@ -14,22 +14,22 @@ class Historico extends Model
         'data',
         'tipo',
         'texto',
+        'proxima_acao',
+        'data_proxima_acao',
         'retorno',
         'data_retorno',
         'ativar_lembrete',
-        'proxima_acao',
-        'data_proxima_acao',
         'anexo'
     ];
 
     protected $casts = [
         'data' => 'datetime',
+        'data_proxima_acao' => 'datetime',
         'data_retorno' => 'datetime',
-        'data_proxima_acao' => 'date',
         'ativar_lembrete' => 'boolean'
     ];
 
-    public function historicoable()
+    public function historicable()
     {
         return $this->morphTo();
     }
@@ -38,4 +38,4 @@ class Historico extends Model
     {
         return $this->belongsTo(User::class);
     }
-} 
+}

@@ -35,7 +35,7 @@
             @endif
 
             {{-- Página principal --}}
-            <div class="layout-page">
+            <div class="layout-page" style="padding-top: 4.5rem !important;">
 
                 {{-- Content wrapper --}}
                 <div class="content-wrapper">

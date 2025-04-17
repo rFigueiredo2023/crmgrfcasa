@@ -3,6 +3,17 @@ use Illuminate\Support\Facades\Vite;
 
 $menuCollapsed = ($configData['menuCollapsed'] === 'layout-menu-collapsed') ? json_encode(true) : false;
 @endphp
+
+<!-- Fix para o problema de "piscada" do layout durante o carregamento -->
+<script>
+  // Sobrescreve a função que recalcula o padding-top dinamicamente
+  // DEVE ser definido ANTES do carregamento do helpers.js
+  window.Helpers = window.Helpers || {};
+  window.Helpers.isNavbarFixed = function () {
+    return false;
+  };
+</script>
+
 <!-- laravel style -->
 @vite(['resources/assets/vendor/js/helpers.js'])
 <!-- beautify ignore:start -->
@@ -20,9 +31,9 @@ $menuCollapsed = ($configData['menuCollapsed'] === 'layout-menu-collapsed') ? js
   window.templateCustomizer = new TemplateCustomizer({
     cssPath: '',
     themesPath: '',
-    defaultStyle: "{{$configData['styleOpt']}}",
+    defaultStyle: "light", // Forçar tema claro
     defaultShowDropdownOnHover: "{{$configData['showDropdownOnHover']}}", // true/false (for horizontal layout only)
-    displayCustomizer: "{{$configData['displayCustomizer']}}",
+    displayCustomizer: false, // Desativar o customizador
     lang: '{{ app()->getLocale() }}',
     pathResolver: function(path) {
       var resolvedPaths = {
@@ -40,7 +51,12 @@ $menuCollapsed = ($configData['menuCollapsed'] === 'layout-menu-collapsed') ? js
       }
       return resolvedPaths[path] || path;
     },
-    'controls': <?php echo json_encode($configData['customizerControls']); ?>,
+    transitions: false, // Desativar transições
+    styles: ['light'], // Permitir apenas o estilo claro
+    layout: 'horizontal', // Fixar o layout como horizontal
+    layoutType: 'fixed', // Fixar o tipo de layout
+    navbarType: 'fixed', // Fixar a navbar
+    'controls': ['style'] // Permitir apenas controle de estilo (e mesmo assim, limitado ao claro)
   });
 </script>
 @endif

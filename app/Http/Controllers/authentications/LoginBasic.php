@@ -15,7 +15,7 @@ class LoginBasic extends Controller
     if (Auth::check()) {
       return $this->redirectBasedOnRole(Auth::user());
     }
-    
+
     $pageConfigs = ['myLayout' => 'blank'];
     return view('content.authentications.auth-login-basic', ['pageConfigs' => $pageConfigs]);
   }
@@ -56,6 +56,12 @@ class LoginBasic extends Controller
    */
   protected function redirectBasedOnRole($user): RedirectResponse
   {
+      // Verificação adicional para evitar redirecionamento em loop
+      if (empty($user->role)) {
+          // Se não tiver role, manda para uma página padrão
+          return redirect('/atendimentos');
+      }
+
       switch ($user->role) {
           case 'admin':
               return redirect()->route('dashboard.admin');
@@ -64,7 +70,9 @@ class LoginBasic extends Controller
           case 'financeiro':
               return redirect()->route('dashboard.financeiro');
           default:
-              return redirect()->route('login');
+              // Em vez de redirecionar para login (que causa loop),
+              // redirecionamos para uma página padrão
+              return redirect('/atendimentos');
       }
   }
 }

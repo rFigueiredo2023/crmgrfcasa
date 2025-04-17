@@ -154,14 +154,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Função para carregar o histórico
     function carregarHistorico(id) {
-        fetch(`/leads/${id}/historico`)
+        console.log('Carregando histórico de lead ID:', id);
+
+        // Usar a mesma rota que funciona para clientes
+        fetch(`/customers/clientes/${id}/historico`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Erro ao carregar histórico');
+                    throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Dados recebidos:', data);
+
                 // Atualizar título do modal
                 document.getElementById('modal-title').textContent = `Histórico de: ${data.cliente.razao_social}`;
 
@@ -176,6 +190,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Atualizar timeline
                 const timeline = document.getElementById('historico-timeline');
                 timeline.innerHTML = '';
+
+                if (!data.historicos || data.historicos.length === 0) {
+                    timeline.innerHTML = '<div class="text-center text-muted">Nenhum histórico encontrado</div>';
+                    return;
+                }
 
                 // Função para obter o ícone baseado no tipo
                 function getTipoIcon(tipo) {
@@ -255,7 +274,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Evento de abertura do modal
     modalHistorico.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
+        console.log('Botão clicado:', button);
+        console.log('Atributos do botão:', {
+            'data-lead-id': button.getAttribute('data-lead-id'),
+            'data-lead-nome': button.getAttribute('data-lead-nome')
+        });
+
         leadId = button.getAttribute('data-lead-id');
+
+        if (!leadId) {
+            console.error('ID do lead não encontrado no botão');
+            return;
+        }
+
         carregarHistorico(leadId);
     });
 
@@ -265,9 +296,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const formData = new FormData(this);
 
-        fetch(`/leads/${leadId}/historico`, {
+        // Usar a mesma rota que funciona para clientes
+        fetch(`/customers/clientes/${leadId}/historico`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
         .then(response => response.json())
         .then(data => {

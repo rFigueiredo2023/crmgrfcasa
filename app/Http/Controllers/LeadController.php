@@ -18,33 +18,105 @@ class LeadController extends Controller
 
     public function historico(Lead $lead)
     {
-        $historicos = $lead->historicos()->with('usuario')->orderBy('data', 'desc')->get()->map(function($historico) {
-            return [
-                'data' => $historico->data->format('d/m/Y H:i'),
-                'vendedora' => $historico->usuario->name,
-                'tipo' => $historico->tipo,
-                'texto' => $historico->texto,
-                'proxima_acao' => $historico->proxima_acao,
-                'data_proxima_acao' => $historico->data_proxima_acao ? $historico->data_proxima_acao->format('d/m/Y') : null,
-                'retorno' => $historico->retorno,
-                'data_retorno' => $historico->data_retorno ? $historico->data_retorno->format('d/m/Y') : null,
-                'ativar_lembrete' => $historico->ativar_lembrete,
-                'anexo' => $historico->anexo ? Storage::url($historico->anexo) : null
-            ];
-        });
+        try {
+            // Log detalhado para diagnóstico
+            \Log::info('Função historico() chamada para lead ID: ' . $lead->id, [
+                'lead_data' => [
+                    'id' => $lead->id,
+                    'razao_social' => $lead->razao_social,
+                    'has_historicos_relation' => method_exists($lead, 'historicos')
+                ]
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'cliente' => [
-                'razao_social' => $lead->nome_empresa,
-                'cnpj' => $lead->cnpj ?? 'Não informado',
-                'telefone' => $lead->telefone,
-                'contato' => $lead->contato,
-                'endereco' => $lead->endereco ?? 'Não informado',
-                'vendedora' => $lead->vendedor->name ?? 'Não atribuído'
-            ],
-            'historicos' => $historicos
-        ]);
+            // Verificar se o lead existe
+            if (!$lead) {
+                throw new \Exception("Lead não encontrado");
+            }
+
+            try {
+                // Primeiro tenta buscar históricos
+                $historicos = $lead->historicos()
+                    ->with('user')
+                    ->orderBy('data', 'desc')
+                    ->get();
+
+                \Log::info('Históricos encontrados para lead ID ' . $lead->id . ': ' . $historicos->count());
+
+                $historicosFormatados = $historicos->map(function($historico) {
+                    try {
+                        return [
+                            'id' => $historico->id,
+                            'tipo' => $historico->tipo,
+                            'data' => $historico->data->format('d/m/Y H:i'),
+                            'texto' => $historico->texto,
+                            'vendedora' => $historico->user ? $historico->user->name : 'Não atribuído',
+                            'status' => 'em_andamento',
+                            'retorno' => $historico->retorno,
+                            'data_retorno' => $historico->data_retorno ? $historico->data_retorno->format('d/m/Y \à\s H:i') : null,
+                            'proxima_acao' => $historico->proxima_acao,
+                            'data_proxima_acao' => $historico->data_proxima_acao ? $historico->data_proxima_acao->format('d/m/Y \à\s H:i') : null,
+                            'ativar_lembrete' => $historico->ativar_lembrete,
+                            'anexo' => $historico->anexo ? (Storage::exists($historico->anexo) ? Storage::url($historico->anexo) : null) : null,
+                            'vendedor' => $historico->user ? [
+                                'id' => $historico->user->id,
+                                'name' => $historico->user->name
+                            ] : null
+                        ];
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao processar histórico ID ' . $historico->id . ': ' . $e->getMessage());
+                        return null;
+                    }
+                })->filter();
+
+                // Retorna os dados formatados
+                return response()->json([
+                    'success' => true,
+                    'cliente' => [
+                        'razao_social' => $lead->razao_social,
+                        'cnpj' => $lead->cnpj ?? 'Não informado',
+                        'telefone' => $lead->telefone,
+                        'contato' => $lead->contato,
+                        'endereco' => $lead->endereco ?? 'Não informado',
+                        'vendedora' => $lead->vendedor ? $lead->vendedor->name : 'Não atribuído'
+                    ],
+                    'historicos' => $historicosFormatados,
+                    // Inclui mensagem apropriada
+                    'message' => $historicosFormatados->count() > 0
+                        ? 'Históricos carregados com sucesso'
+                        : 'Nenhum histórico encontrado para este lead'
+                ]);
+
+            } catch (\Exception $e) {
+                // Erro específico ao acessar os históricos
+                \Log::error('Erro ao acessar históricos do lead: ' . $e->getMessage());
+
+                // Mesmo que ocorra um erro, retornamos uma resposta válida para evitar quebrar a interface
+                return response()->json([
+                    'success' => true,
+                    'cliente' => [
+                        'razao_social' => $lead->razao_social,
+                        'cnpj' => $lead->cnpj ?? 'Não informado',
+                        'telefone' => $lead->telefone,
+                        'contato' => $lead->contato,
+                        'endereco' => $lead->endereco ?? 'Não informado',
+                        'vendedora' => $lead->vendedor ? $lead->vendedor->name : 'Não atribuído'
+                    ],
+                    'historicos' => [],
+                    'message' => 'Erro ao carregar históricos: ' . $e->getMessage(),
+                    'debug_info' => 'Verifique se os relacionamentos polimórficos estão configurados corretamente. Use o comando "php artisan historicos:fix" para corrigir problemas.'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Erro no historico de lead: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Ocorreu um erro ao processar o histórico de lead.',
+                'debug_info' => 'Verifique se os relacionamentos polimórficos estão configurados corretamente. Use o comando "php artisan historicos:fix" para corrigir problemas.'
+            ], 500);
+        }
     }
 
     public function storeHistorico(Request $request, Lead $lead)
@@ -112,7 +184,7 @@ class LeadController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome_empresa' => 'required|string|max:255',
+            'razao_social' => 'required|string|max:255',
             'cnpj' => 'nullable|string|max:18',
             'ie' => 'nullable|string|max:20',
             'endereco' => 'nullable|string|max:255',
@@ -126,7 +198,7 @@ class LeadController extends Controller
         ]);
 
         $lead = Lead::create([
-            'nome_empresa' => $request->nome_empresa,
+            'razao_social' => $request->razao_social,
             'cnpj' => $request->cnpj,
             'ie' => $request->ie,
             'endereco' => $request->endereco,
@@ -171,7 +243,7 @@ class LeadController extends Controller
 
             // Criar o cliente
             $cliente = Cliente::create([
-                'razao_social' => $lead->nome_empresa,
+                'razao_social' => $lead->razao_social,
                 'cnpj' => $lead->cnpj,
                 'ie' => $lead->ie,
                 'endereco' => $lead->endereco,
@@ -181,9 +253,9 @@ class LeadController extends Controller
                 'user_id' => auth()->id()
             ]);
 
-            // Copiar históricos
+            // Copiar históricos - seguindo o padrão polimórfico
             foreach ($lead->historicos as $historico) {
-                // Se tiver anexo, copiar para novo diretório
+                // Se tiver anexo, copiar para novo diretório com o ID do cliente
                 $novoAnexoPath = null;
                 if ($historico->anexo) {
                     $oldPath = str_replace('public/', '', $historico->anexo);
@@ -194,6 +266,8 @@ class LeadController extends Controller
                     }
                 }
 
+                // Criar novo histórico para o cliente com os dados do lead
+                // Não usamos toArray() para evitar copiar IDs e campos de controle
                 $cliente->historicos()->create([
                     'user_id' => $historico->user_id,
                     'data' => $historico->data,
@@ -205,6 +279,8 @@ class LeadController extends Controller
                     'data_retorno' => $historico->data_retorno,
                     'ativar_lembrete' => $historico->ativar_lembrete,
                     'anexo' => $novoAnexoPath
+                    // historicable_id e historicable_type são preenchidos automaticamente
+                    // pela relação polimórfica $cliente->historicos()
                 ]);
             }
 

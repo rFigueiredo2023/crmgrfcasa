@@ -35,7 +35,7 @@ $contentLayout = (isset($container) ? (($container === 'container-xxl') ? "layou
   @include('layouts/sections/scriptsIncludes' . $isFront)
 </head>
 
-<body>
+<body class="layout-navbar-fixed" data-theme="theme-default" data-layout="horizontal" data-template="horizontal" data-transition="none">
 
   <!-- Layout Content -->
   @yield('layoutContent')
@@ -47,6 +47,9 @@ $contentLayout = (isset($container) ? (($container === 'container-xxl') ? "layou
   <!-- Scripts do layout -->
   @include('layouts/sections/scripts' . $isFront)
   @stack('scripts')
+
+  <!-- Scripts -->
+  <script src="{{ asset('js/global-layout-fix.js') }}"></script>
 
 </body>
 </html>

@@ -14,7 +14,6 @@ class Lead extends Model
         'cnpj',
         'ie',
         'endereco',
-        'codigo_ibge',
         'telefone',
         'contato',
         'data_proxima_acao',
@@ -36,11 +35,11 @@ class Lead extends Model
 
     public function historicos()
     {
-        return $this->morphMany(Historico::class, 'historicoable');
+        return $this->morphMany(Historico::class, 'historicable');
     }
 
-    public function ultimoAtendimento()
+    public function ultimoHistorico()
     {
-        return $this->morphOne(Historico::class, 'historicoable')->latest('data');
+        return $this->morphOne(Historico::class, 'historicable')->latest('data');
     }
 }

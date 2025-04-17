@@ -20,6 +20,8 @@ use App\Http\Controllers\Dashboards\VendasDashboardController;
 use App\Http\Controllers\Dashboards\FinancialDashboardController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadAtendimentoController;
+use App\Http\Controllers\LeadAtendimentoFakeController;
+use App\Http\Controllers\LeadHistoricoController;
 
 // Rotas públicas
 Route::middleware('web')->group(function () {
@@ -110,9 +112,53 @@ Route::middleware('web')->group(function () {
         Route::post('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'store'])->name('lead.atendimentos.store');
         Route::get('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'show'])->name('lead.atendimentos.show');
         Route::get('/atendimentos/{atendimento}/anexo', [LeadAtendimentoController::class, 'downloadAnexo'])->name('atendimento.anexo.download');
+
+        // Rota de fallback para testar o problema com atendimento singular
+        Route::post('/leads/{id}/atendimento', [LeadAtendimentoFakeController::class, 'store'])->name('lead.atendimento.store');
+
+        // Rota de teste para diagnóstico
+        Route::get('/teste-lead/{id}', function($id) {
+            return response()->json([
+                'success' => true,
+                'teste' => true,
+                'id' => $id
+            ]);
+        });
+
+        // Rota alternativa para histórico de lead sem usar route model binding
+        Route::get('/teste-historico-lead/{id}', function($id) {
+            try {
+                // Busca o lead diretamente pelo ID
+                $lead = \App\Models\Lead::find($id);
+
+                if (!$lead) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Lead não encontrado'
+                    ], 404);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'lead_id' => $lead->id,
+                    'razao_social' => $lead->razao_social,
+                    'teste' => 'Rota de teste funcionando'
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ], 500);
+            }
+        });
     });
 });
 
 // Locale
 Route::get('/lang/{locale}', [LanguageController::class, 'swap']);
 Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');
+
+// Nova rota para o controlador especializado de históricos de leads
+Route::get('/lead-historico/{id}', [LeadHistoricoController::class, 'index'])->name('lead.historico.index');
+Route::post('/lead-historico/{id}', [LeadHistoricoController::class, 'store'])->name('lead.historico.store');
