@@ -389,6 +389,8 @@
             </div>
         </div>
     </div>
+
+    @include('components.modal-atendimento')
 @endpush
 
 @push('styles')

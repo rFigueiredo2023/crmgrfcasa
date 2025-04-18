@@ -76,6 +76,7 @@
 <!-- / Pills Nav -->
 
 @include('components.form-lead-atendimento')
+@include('components.modal-atendimento')
 @include('components.modal-historico-cliente')
 @include('components.modal-historico-lead')
 

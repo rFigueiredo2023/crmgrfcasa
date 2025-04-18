@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class LeadController extends Controller
 {
@@ -121,62 +122,66 @@ class LeadController extends Controller
 
     public function storeHistorico(Request $request, Lead $lead)
     {
-        $validated = $request->validate([
-            'texto' => 'required|string',
-            'tipo' => 'required|string|in:Ligação,WhatsApp,E-mail,Visita,Reunião,Outro',
-            'proxima_acao' => 'nullable|string',
-            'data_proxima_acao' => 'nullable|date|after_or_equal:today',
-            'retorno' => 'nullable|string',
-            'data_retorno' => 'nullable|date|after_or_equal:today',
-            'ativar_lembrete' => 'nullable|boolean',
-            'anexo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif|max:5120'
-        ]);
-
         try {
             DB::beginTransaction();
 
-            $anexoPath = null;
-            if ($request->hasFile('anexo')) {
-                $file = $request->file('anexo');
-                $anexoPath = $file->store('historicos/anexos', 'public');
+            $validator = Validator::make($request->all(), [
+                'tipo_contato' => 'required|string',
+                'texto' => 'required|string',
+                'proxima_acao' => 'nullable|string',
+                'data_proxima_acao' => 'nullable|date',
+                'retorno' => 'nullable|string',
+                'data_retorno' => 'nullable|date',
+                'ativar_lembrete' => 'nullable|boolean',
+                'anexo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif|max:5120'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
             }
 
+            // Criar o histórico usando o relacionamento polimórfico
             $historico = $lead->historicos()->create([
                 'user_id' => auth()->id(),
-                'data' => now(),
-                'tipo' => $validated['tipo'],
-                'texto' => $validated['texto'],
-                'proxima_acao' => $validated['proxima_acao'],
-                'data_proxima_acao' => $validated['data_proxima_acao'],
-                'retorno' => $validated['retorno'],
-                'data_retorno' => $validated['data_retorno'],
+                'tipo' => $request->tipo_contato,
+                'texto' => $request->texto,
+                'proxima_acao' => $request->proxima_acao,
+                'data_proxima_acao' => $request->data_proxima_acao,
+                'retorno' => $request->retorno,
+                'data_retorno' => $request->data_retorno,
                 'ativar_lembrete' => $request->boolean('ativar_lembrete'),
-                'anexo' => $anexoPath
+                'data' => now()
             ]);
+
+            // Se tiver anexo, salvar
+            if ($request->hasFile('anexo')) {
+                $path = $request->file('anexo')->store('atendimentos/anexos', 'public');
+                $historico->anexo = $path;
+                $historico->save();
+            }
+
+            // Atualizar status do lead se fornecido
+            if ($request->has('status') && $request->status) {
+                $lead->status = $request->status;
+                $lead->save();
+            }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Histórico registrado com sucesso!',
-                'historico' => [
-                    'data' => $historico->data->format('d/m/Y H:i'),
-                    'vendedora' => auth()->user()->name,
-                    'tipo' => $historico->tipo,
-                    'texto' => $historico->texto,
-                    'proxima_acao' => $historico->proxima_acao,
-                    'data_proxima_acao' => $historico->data_proxima_acao ? $historico->data_proxima_acao->format('d/m/Y') : null,
-                    'retorno' => $historico->retorno,
-                    'data_retorno' => $historico->data_retorno ? $historico->data_retorno->format('d/m/Y') : null,
-                    'ativar_lembrete' => $historico->ativar_lembrete,
-                    'anexo' => $anexoPath ? Storage::url($anexoPath) : null
-                ]
+                'message' => 'Atendimento registrado com sucesso!',
+                'historico' => $historico
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao salvar histórico: ' . $e->getMessage()
+                'message' => 'Erro ao registrar atendimento: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -305,6 +310,104 @@ class LeadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao converter lead em cliente: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Retornar dados de um lead específico para API
+     *
+     * @param Lead $lead
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Lead $lead)
+    {
+        try {
+            return response()->json($lead);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erro ao buscar lead: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Criar um novo lead com atendimento inicial
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeComAtendimento(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validar dados do lead
+            $validator = Validator::make($request->all(), [
+                'razao_social' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'telefone' => 'required|string|max:20',
+                'cnpj' => 'nullable|string|max:20',
+                'ie' => 'nullable|string|max:20',
+                'endereco' => 'nullable|string|max:255',
+                'contato' => 'nullable|string|max:255',
+                'tipo_contato' => 'required|string',
+                'descricao' => 'required|string',
+                'status' => 'required|string',
+                'anexo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif|max:5120',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Criar o lead
+            $lead = new Lead();
+            $lead->razao_social = $request->razao_social;
+            $lead->email = $request->email;
+            $lead->telefone = $request->telefone;
+            $lead->cnpj = $request->cnpj;
+            $lead->ie = $request->ie;
+            $lead->endereco = $request->endereco;
+            $lead->contato = $request->contato;
+            $lead->user_id = auth()->id();
+            $lead->save();
+
+            // Criar o histórico usando o relacionamento polimórfico
+            $historico = $lead->historicos()->create([
+                'user_id' => auth()->id(),
+                'tipo' => $request->tipo_contato,
+                'texto' => $request->descricao,
+                'proxima_acao' => $request->proxima_acao,
+                'data_proxima_acao' => $request->data_proxima_acao,
+                'retorno' => $request->retorno,
+                'data_retorno' => $request->data_retorno,
+                'ativar_lembrete' => $request->boolean('ativar_lembrete'),
+                'data' => now()
+            ]);
+
+            // Se tiver anexo, salvar
+            if ($request->hasFile('anexo')) {
+                $path = $request->file('anexo')->store('atendimentos/anexos', 'public');
+                $historico->anexo = $path;
+                $historico->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead e atendimento registrados com sucesso!',
+                'lead' => $lead,
+                'historico' => $historico
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao registrar lead e atendimento: ' . $e->getMessage()
             ], 500);
         }
     }

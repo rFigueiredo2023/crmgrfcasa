@@ -12,7 +12,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="tipo_contato" class="form-label">Tipo de Contato</label>
-                            <select class="form-select" id="tipo" name="tipo" required>
+                            <select class="form-select" id="tipo_contato" name="tipo_contato" required>
                                 <option value="">Selecione...</option>
                                 <option value="Ligação">Ligação</option>
                                 <option value="WhatsApp">WhatsApp</option>
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Validar campos obrigatórios
         let isValid = true;
-        const tipo = document.getElementById('tipo');
+        const tipo = document.getElementById('tipo_contato');
         const texto = document.getElementById('texto');
 
         if (!tipo.value) {
@@ -106,9 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isValid) return;
 
         const leadId = this.getAttribute('data-lead-id');
-        this.action = `/leads/${leadId}/historico`;
-
         const formData = new FormData(this);
+
+        // Adicionar o ID do lead à URL
+        const url = `/api/leads/${leadId}/historicos`;
 
         // Ajustar valores do formulário conforme necessário
         if (formData.get('data_proxima_acao') === '') {
@@ -120,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Enviar requisição
-        fetch(this.action, {
+        fetch(url, {
             method: 'POST',
             body: formData,
             headers: {
@@ -159,6 +160,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         confirmButton: 'btn btn-success'
                     }
                 });
+
+                // Atualizar a página após sucesso
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             }
         })
         .catch(error => {
@@ -172,6 +178,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    });
+
+    // Configurar o ID do lead quando o modal for aberto
+    $('#modalAtendimentoLead').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const leadId = button.data('lead-id');
+        formAtendimentoLead.setAttribute('data-lead-id', leadId);
+        formAtendimentoLead.reset();
     });
 });
 </script>

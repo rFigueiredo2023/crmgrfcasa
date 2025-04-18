@@ -13,9 +13,9 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label" for="nome">Nome *</label>
-              <input type="text" class="form-control" id="nome" name="nome" required>
-              <div class="invalid-feedback">Nome é obrigatório</div>
+              <label class="form-label" for="razao_social">Nome/Razão Social *</label>
+              <input type="text" class="form-control" id="razao_social" name="razao_social" required>
+              <div class="invalid-feedback">Nome/Razão Social é obrigatório</div>
             </div>
             <div class="col-md-6">
               <label class="form-label" for="email">Email *</label>
@@ -31,30 +31,26 @@
               <div class="invalid-feedback">Telefone é obrigatório</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="origem">Origem *</label>
-              <select class="form-select" id="origem" name="origem" required>
-                <option value="">Selecione</option>
-                <option value="site">Site</option>
-                <option value="indicacao">Indicação</option>
-                <option value="redes_sociais">Redes Sociais</option>
-                <option value="ligacao">Ligação</option>
-                <option value="outro">Outro</option>
-              </select>
-              <div class="invalid-feedback">Origem é obrigatória</div>
+              <label class="form-label" for="cnpj">CNPJ</label>
+              <input type="text" class="form-control" id="cnpj" name="cnpj">
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-12">
-              <label class="form-label" for="interesse">Interesse</label>
-              <input type="text" class="form-control" id="interesse" name="interesse">
+              <label class="form-label" for="endereco">Endereço</label>
+              <input type="text" class="form-control" id="endereco" name="endereco">
             </div>
           </div>
 
           <div class="row mb-3">
-            <div class="col-md-12">
-              <label class="form-label" for="observacoes">Observações</label>
-              <textarea class="form-control" id="observacoes" name="observacoes" rows="2"></textarea>
+            <div class="col-md-6">
+              <label class="form-label" for="contato">Nome do Contato</label>
+              <input type="text" class="form-control" id="contato" name="contato">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="ie">Inscrição Estadual</label>
+              <input type="text" class="form-control" id="ie" name="ie">
             </div>
           </div>
 
@@ -64,42 +60,53 @@
 
             <div class="row mb-3">
               <div class="col-md-6">
-                <label class="form-label" for="tipo">Tipo de Atendimento *</label>
-                <select class="form-select" id="tipo" name="tipo" required>
+                <label class="form-label" for="tipo_contato">Tipo de Contato *</label>
+                <select class="form-select" id="tipo_contato" name="tipo_contato" required>
                   <option value="">Selecione</option>
-                  <option value="primeiro_contato">Primeiro Contato</option>
-                  <option value="retorno">Retorno</option>
-                  <option value="proposta">Proposta</option>
-                  <option value="duvida">Dúvida</option>
-                  <option value="outro">Outro</option>
+                  <option value="Ligação">Ligação</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="E-mail">E-mail</option>
+                  <option value="Visita">Visita</option>
+                  <option value="Reunião">Reunião</option>
+                  <option value="Outro">Outro</option>
                 </select>
-                <div class="invalid-feedback">Tipo de atendimento é obrigatório</div>
+                <div class="invalid-feedback">Tipo de contato é obrigatório</div>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="canal">Canal *</label>
-                <select class="form-select" id="canal" name="canal" required>
+                <label class="form-label" for="status">Status *</label>
+                <select class="form-select" id="status" name="status" required>
                   <option value="">Selecione</option>
-                  <option value="telefone">Telefone</option>
-                  <option value="email">E-mail</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="presencial">Presencial</option>
-                  <option value="outro">Outro</option>
+                  <option value="aberto">Aberto</option>
+                  <option value="aguardando">Aguardando Retorno</option>
+                  <option value="em_andamento">Em Andamento</option>
                 </select>
-                <div class="invalid-feedback">Canal é obrigatório</div>
+                <div class="invalid-feedback">Status é obrigatório</div>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label" for="descricao">Descrição do Atendimento *</label>
+                <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+                <div class="invalid-feedback">Descrição do atendimento é obrigatória</div>
               </div>
             </div>
 
             <div class="row mb-3">
               <div class="col-md-6">
-                <label class="form-label" for="status">Status *</label>
-                <select class="form-select" id="status" name="status" required>
-                  <option value="">Selecione</option>
-                  <option value="aguardando">Aguardando Retorno</option>
-                  <option value="em_andamento">Em Andamento</option>
-                  <option value="concluido">Concluído</option>
-                  <option value="cancelado">Cancelado</option>
-                </select>
-                <div class="invalid-feedback">Status é obrigatório</div>
+                <label class="form-label" for="proxima_acao">Próxima Ação</label>
+                <textarea class="form-control" id="proxima_acao" name="proxima_acao" rows="2"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="data_proxima_acao">Data da Próxima Ação</label>
+                <input type="date" class="form-control" id="data_proxima_acao" name="data_proxima_acao">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label" for="retorno">Retorno</label>
+                <textarea class="form-control" id="retorno" name="retorno" rows="2"></textarea>
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="data_retorno">Data de Retorno</label>
@@ -109,9 +116,18 @@
 
             <div class="row mb-3">
               <div class="col-md-12">
-                <label class="form-label" for="descricao">Descrição do Atendimento *</label>
-                <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
-                <div class="invalid-feedback">Descrição do atendimento é obrigatória</div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="ativar_lembrete" name="ativar_lembrete" value="1">
+                  <label class="form-check-label" for="ativar_lembrete">Ativar lembrete</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label" for="anexo">Anexo</label>
+                <input type="file" class="form-control" id="anexo" name="anexo">
+                <div class="form-text">Arquivos permitidos: pdf, jpg, jpeg, png (máx: 5MB)</div>
               </div>
             </div>
           </div>
@@ -143,6 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  if ($("#cnpj").length) {
+    $("#cnpj").inputmask({
+      mask: ['99.999.999/9999-99'],
+      keepStatic: true
+    });
+  }
+
   // Ao abrir o modal para editar
   $('#leadModal').on('show.bs.modal', function(event) {
     const button = $(event.relatedTarget);
@@ -157,22 +180,22 @@ document.addEventListener('DOMContentLoaded', function() {
       atendimentoSection.style.display = 'none';
 
       // Desativar validação para campos de atendimento em modo edição
-      document.getElementById('tipo').removeAttribute('required');
-      document.getElementById('canal').removeAttribute('required');
+      document.getElementById('tipo_contato').removeAttribute('required');
       document.getElementById('status').removeAttribute('required');
       document.getElementById('descricao').removeAttribute('required');
 
       // Buscar dados do lead
-      fetch(`/leads/${leadId}/edit`)
+      fetch(`/api/leads/${leadId}`)
         .then(response => response.json())
         .then(data => {
           document.getElementById('lead_id').value = data.id;
-          document.getElementById('nome').value = data.nome;
+          document.getElementById('razao_social').value = data.razao_social;
           document.getElementById('email').value = data.email;
           document.getElementById('telefone').value = data.telefone;
-          document.getElementById('origem').value = data.origem;
-          document.getElementById('interesse').value = data.interesse;
-          document.getElementById('observacoes').value = data.observacoes;
+          document.getElementById('cnpj').value = data.cnpj || '';
+          document.getElementById('endereco').value = data.endereco || '';
+          document.getElementById('contato').value = data.contato || '';
+          document.getElementById('ie').value = data.ie || '';
         })
         .catch(error => {
           console.error('Erro ao carregar dados do lead:', error);
@@ -189,8 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('lead_id').value = '';
 
       // Ativar validação para campos de atendimento em modo criação
-      document.getElementById('tipo').setAttribute('required', '');
-      document.getElementById('canal').setAttribute('required', '');
+      document.getElementById('tipo_contato').setAttribute('required', '');
       document.getElementById('status').setAttribute('required', '');
       document.getElementById('descricao').setAttribute('required', '');
     }
@@ -217,8 +239,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const leadId = document.getElementById('lead_id').value;
     const formData = new FormData(leadForm);
-    const url = leadId ? `/leads/${leadId}` : '/leads';
-    const method = leadId ? 'PUT' : 'POST';
+
+    // Definir a URL com base no modo (edição ou criação)
+    let url = leadId ? `/api/leads/${leadId}` : '/api/leads/com-atendimento';
+    let method = leadId ? 'PUT' : 'POST';
 
     // Adicionar método PUT se for edição
     if (leadId) {

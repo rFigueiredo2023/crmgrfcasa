@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ClienteController extends Controller
 {
@@ -19,7 +21,7 @@ class ClienteController extends Controller
         $request->validate([
             'razao_social' => 'required|string|max:255',
             'cnpj' => 'required|string|max:18|unique:clientes,cnpj',
-            'ie' => 'nullable|string|max:20',
+            'inscricao_estadual' => 'nullable|string|max:20',
             'endereco' => 'required|string|max:255',
             'codigo_ibge' => 'required|string|max:10',
             'telefone' => 'required|string|max:20',
@@ -29,7 +31,7 @@ class ClienteController extends Controller
         $cliente = Cliente::create([
             'razao_social' => $request->razao_social,
             'cnpj' => $request->cnpj,
-            'ie' => $request->ie,
+            'inscricao_estadual' => $request->inscricao_estadual,
             'endereco' => $request->endereco,
             'codigo_ibge' => $request->codigo_ibge,
             'telefone' => $request->telefone,
@@ -159,31 +161,62 @@ class ClienteController extends Controller
 
     public function storeHistorico(Request $request, Cliente $cliente)
     {
-        $validated = $request->validate([
-            'texto' => 'required|string',
-            'tipo' => 'required|string|in:Ligação,WhatsApp,E-mail,Visita,Reunião,Outro',
-            'proxima_acao' => 'nullable|string'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $historico = $cliente->historicos()->create([
-            'user_id' => auth()->id(),
-            'data' => now(),
-            'tipo' => $validated['tipo'],
-            'texto' => $validated['texto'],
-            'proxima_acao' => $validated['proxima_acao']
-        ]);
+            $validator = Validator::make($request->all(), [
+                'tipo_contato' => 'required|string',
+                'texto' => 'required|string',
+                'proxima_acao' => 'nullable|string',
+                'data_proxima_acao' => 'nullable|date',
+                'retorno' => 'nullable|string',
+                'data_retorno' => 'nullable|date',
+                'ativar_lembrete' => 'nullable|boolean',
+                'anexo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif|max:5120'
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Histórico registrado com sucesso!',
-            'historico' => [
-                'data' => $historico->data->format('d/m/Y H:i'),
-                'vendedora' => auth()->user()->name,
-                'tipo' => $historico->tipo,
-                'texto' => $historico->texto,
-                'proxima_acao' => $historico->proxima_acao
-            ]
-        ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Criar o histórico usando o relacionamento polimórfico
+            $historico = $cliente->historicos()->create([
+                'user_id' => auth()->id(),
+                'tipo' => $request->tipo_contato,
+                'texto' => $request->texto,
+                'proxima_acao' => $request->proxima_acao,
+                'data_proxima_acao' => $request->data_proxima_acao,
+                'retorno' => $request->retorno,
+                'data_retorno' => $request->data_retorno,
+                'ativar_lembrete' => $request->boolean('ativar_lembrete'),
+                'data' => now()
+            ]);
+
+            // Se tiver anexo, salvar
+            if ($request->hasFile('anexo')) {
+                $path = $request->file('anexo')->store('atendimentos/anexos', 'public');
+                $historico->anexo = $path;
+                $historico->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Histórico registrado com sucesso!',
+                'historico' => $historico
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao registrar histórico: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function atendimentos(Cliente $cliente)
@@ -214,6 +247,21 @@ class ClienteController extends Controller
         } catch (\Exception $e) {
             \Log::error('Erro ao buscar atendimentos: ' . $e->getMessage());
             return response()->json([]);
+        }
+    }
+
+    /**
+     * Retornar dados de um cliente específico para API
+     *
+     * @param Cliente $cliente
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Cliente $cliente)
+    {
+        try {
+            return response()->json($cliente);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erro ao buscar cliente: ' . $e->getMessage()], 500);
         }
     }
 }

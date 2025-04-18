@@ -31,20 +31,9 @@
               <div class="invalid-feedback">CPF/CNPJ é obrigatório</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="inscricao_estadual">Inscrição Estadual</label>
-              <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual">
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-md-6">
               <label class="form-label" for="telefone">Telefone *</label>
               <input type="text" class="form-control" id="telefone" name="telefone" required>
               <div class="invalid-feedback">Telefone é obrigatório</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="email">Email</label>
-              <input type="email" class="form-control" id="email" name="email">
             </div>
           </div>
 
@@ -147,14 +136,13 @@ document.addEventListener('DOMContentLoaded', function() {
       modalTitle.textContent = 'Editar Cliente';
 
       // Buscar dados do cliente
-      fetch(`/clientes/${clienteId}/edit`)
+      fetch(`/api/clientes/${clienteId}`)
         .then(response => response.json())
         .then(data => {
           document.getElementById('cliente_id').value = data.id;
           document.getElementById('nome').value = data.nome;
           document.getElementById('email').value = data.email;
           document.getElementById('cpf_cnpj').value = data.cpf_cnpj;
-          document.getElementById('inscricao_estadual').value = data.inscricao_estadual || '';
           document.getElementById('telefone').value = data.telefone;
           document.getElementById('cep').value = data.cep;
           document.getElementById('endereco').value = data.endereco;
@@ -199,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const clienteId = document.getElementById('cliente_id').value;
     const formData = new FormData(clienteForm);
-    const url = clienteId ? `/clientes/${clienteId}` : '/clientes';
+    const url = clienteId ? `/api/clientes/${clienteId}` : '/api/clientes';
     const method = clienteId ? 'PUT' : 'POST';
 
     // Adicionar método PUT se for edição
