@@ -70,50 +70,73 @@ $navbarDetached = ($navbarDetached ?? '');
           <!--/ Style Switcher -->
         @endif
 
-        <ul class="navbar-nav flex-row align-items-center ms-auto">
+        <!-- Search -->
+        <div class="navbar-nav align-items-center">
+          <div class="nav-item navbar-search-wrapper mb-0">
+            <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
+              <i class="bx bx-search-alt bx-sm"></i>
+              <span class="d-none d-md-inline-block text-muted">Buscar (Ctrl+/)</span>
+            </a>
+          </div>
+        </div>
+        <!-- /Search -->
 
-        <!-- User -->
-        <li class="nav-item navbar-dropdown dropdown-user dropdown">
-          <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
-            <div class="avatar avatar-online">
-              <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
-            </div>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" href="javascript:void(0);">
-                <div class="d-flex">
-                  <div class="flex-shrink-0 me-3">
-                    <div class="avatar avatar-online">
-                      <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
+        <!-- Nav items -->
+        <ul class="navbar-nav flex-row align-items-center ms-auto">
+          <!-- Dev Assistant -->
+          @auth
+          <li class="nav-item me-2 me-xl-0">
+            <a href="{{ route('dev-assistente') }}"
+               onclick="window.open(this.href, 'assistenteDev', 'width=700,height=800,resizable=yes,scrollbars=yes'); return false;"
+               class="nav-link btn btn-outline-primary btn-sm px-2 py-1">
+              <i class="bx bx-brain font-medium-1"></i>
+              <span class="align-middle d-none d-sm-inline">🧠 Assistente Dev</span>
+            </a>
+          </li>
+          @endauth
+
+          <!-- User -->
+          <li class="nav-item navbar-dropdown dropdown-user dropdown">
+            <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
+              <div class="avatar avatar-online">
+                <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <a class="dropdown-item" href="javascript:void(0);">
+                  <div class="d-flex">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="avatar avatar-online">
+                        <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-0">{{ Auth::user()->name }}</h6>
+                      <small class="text-muted">{{ Auth::user()->role }}</small>
                     </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <h6 class="mb-0">{{ Auth::user()->name }}</h6>
-                    <small class="text-muted">{{ Auth::user()->role }}</small>
-                  </div>
-                </div>
-              </a>
-            </li>
-            <li>
-              <div class="dropdown-divider my-1"></div>
-            </li>
-            <li>
-              <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="dropdown-item">
-                  <i class='bx bx-power-off bx-md me-3'></i>
-                  <span>Sair</span>
-                </button>
-              </form>
-            </li>
-          </ul>
-        </li>
-        <!--/ User -->
-      </ul>
-    </div>
+                </a>
+              </li>
+              <li>
+                <div class="dropdown-divider my-1"></div>
+              </li>
+              <li>
+                <form method="POST" action="{{ route('logout') }}">
+                  @csrf
+                  <button type="submit" class="dropdown-item">
+                    <i class='bx bx-power-off bx-md me-3'></i>
+                    <span>Sair</span>
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+          <!--/ User -->
+        </ul>
+      </div>
 
-    @if(!isset($navbarDetached))
+      @if(!isset($navbarDetached))
     </div>
     @endif
   </nav>

@@ -24,7 +24,9 @@ $contentLayout = (isset($container) ? (($container === 'container-xxl') ? "layou
   <link rel="canonical" href="{{ config('variables.productPage') ? config('variables.productPage') : '' }}">
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap" rel="stylesheet">
 
   <!-- Include Styles -->
   <!-- $isFront is used to append the front layout styles only on the front layout otherwise the variable will be blank -->
@@ -33,6 +35,11 @@ $contentLayout = (isset($container) ? (($container === 'container-xxl') ? "layou
   <!-- Include Scripts for customizer, helper, analytics, config -->
   <!-- $isFront is used to append the front layout scriptsIncludes only on the front layout otherwise the variable will be blank -->
   @include('layouts/sections/scriptsIncludes' . $isFront)
+
+  <!-- Livewire Styles -->
+  @livewireStyles
+
+  @yield('styles')
 </head>
 
 <body class="layout-navbar-fixed" data-theme="theme-default" data-layout="horizontal" data-template="horizontal" data-transition="none">
@@ -51,6 +58,11 @@ $contentLayout = (isset($container) ? (($container === 'container-xxl') ? "layou
   <!-- Scripts -->
   <script src="{{ asset('js/global-layout-fix.js') }}"></script>
 
+  <!-- Livewire Scripts -->
+  @livewireScripts
+
+  <!-- Dev Assistant -->
+  @livewire('dev-assistant')
 </body>
 </html>
 

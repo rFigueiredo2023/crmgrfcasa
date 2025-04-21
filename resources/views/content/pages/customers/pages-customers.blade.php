@@ -185,7 +185,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="add_ie">Inscrição Estadual</label>
-                            <input type="text" class="form-control" id="add_ie" name="ie">
+                            <input type="text" class="form-control" id="add_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="add_endereco">Endereço</label>
@@ -237,7 +237,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="edit_ie">Inscrição Estadual</label>
-                            <input type="text" class="form-control" id="edit_ie" name="ie">
+                            <input type="text" class="form-control" id="edit_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="edit_endereco">Endereço</label>
@@ -294,7 +294,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="edit_trans_ie">Inscrição Estadual</label>
-                            <input type="text" class="form-control" id="edit_trans_ie" name="ie">
+                            <input type="text" class="form-control" id="edit_trans_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="edit_trans_endereco">Endereço</label>

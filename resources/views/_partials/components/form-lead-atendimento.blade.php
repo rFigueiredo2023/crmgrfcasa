@@ -50,7 +50,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label" for="ie">Inscrição Estadual</label>
-              <input type="text" class="form-control" id="ie" name="ie">
+              <input type="text" class="form-control" id="ie" name="inscricao_estadual">
             </div>
           </div>
 

@@ -13,13 +13,14 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label" for="nome">Nome *</label>
-              <input type="text" class="form-control" id="nome" name="nome" required>
-              <div class="invalid-feedback">Nome é obrigatório</div>
+              <label class="form-label" for="razao_social">Razão Social *</label>
+              <input type="text" class="form-control" id="razao_social" name="razao_social" required>
+              <div class="invalid-feedback">Razão Social é obrigatória</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="email">Email</label>
-              <input type="email" class="form-control" id="email" name="email">
+              <label class="form-label" for="email">Email *</label>
+              <input type="email" class="form-control" id="email" name="email" required>
+              <div class="invalid-feedback">Email é obrigatório</div>
             </div>
           </div>
 
@@ -30,22 +31,41 @@
               <div class="invalid-feedback">CNPJ é obrigatório</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="telefone">Telefone</label>
-              <input type="text" class="form-control" id="telefone" name="telefone">
+              <label class="form-label" for="inscricao_estadual">Inscrição Estadual</label>
+              <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="telefone">Telefone *</label>
+              <input type="text" class="form-control" id="telefone" name="telefone" required>
+              <div class="invalid-feedback">Telefone é obrigatório</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="celular">Celular</label>
+              <input type="text" class="form-control" id="celular" name="celular">
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-12">
-              <label class="form-label" for="endereco">Endereço</label>
-              <input type="text" class="form-control" id="endereco" name="endereco">
+              <label class="form-label" for="endereco">Endereço *</label>
+              <input type="text" class="form-control" id="endereco" name="endereco" required>
+              <div class="invalid-feedback">Endereço é obrigatório</div>
             </div>
           </div>
 
           <div class="row mb-3">
-            <div class="col-md-12">
-              <label class="form-label" for="observacoes">Observações</label>
-              <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+            <div class="col-md-6">
+              <label class="form-label" for="codigo_ibge">Código IBGE *</label>
+              <input type="text" class="form-control" id="codigo_ibge" name="codigo_ibge" required>
+              <div class="invalid-feedback">Código IBGE é obrigatório</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="contato">Contato *</label>
+              <input type="text" class="form-control" id="contato" name="contato" required>
+              <div class="invalid-feedback">Contato é obrigatório</div>
             </div>
           </div>
 
@@ -82,6 +102,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  if ($("#celular").length) {
+    $("#celular").inputmask({
+      mask: ['(99) 9999-9999', '(99) 99999-9999'],
+      keepStatic: true
+    });
+  }
+
   // Ao abrir o modal para editar
   $('#transportadoraModal').on('show.bs.modal', function(event) {
     const button = $(event.relatedTarget);
@@ -99,12 +126,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
           document.getElementById('transportadora_id').value = data.id;
-          document.getElementById('nome').value = data.nome;
+          document.getElementById('razao_social').value = data.razao_social;
           document.getElementById('email').value = data.email || '';
           document.getElementById('cnpj').value = data.cnpj;
+          document.getElementById('inscricao_estadual').value = data.inscricao_estadual || '';
           document.getElementById('telefone').value = data.telefone || '';
+          document.getElementById('celular').value = data.celular || '';
           document.getElementById('endereco').value = data.endereco || '';
-          document.getElementById('observacoes').value = data.observacoes || '';
+          document.getElementById('codigo_ibge').value = data.codigo_ibge || '';
+          document.getElementById('contato').value = data.contato || '';
         })
         .catch(error => {
           console.error('Erro ao carregar dados da transportadora:', error);

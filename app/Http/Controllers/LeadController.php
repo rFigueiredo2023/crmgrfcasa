@@ -191,7 +191,7 @@ class LeadController extends Controller
         $request->validate([
             'razao_social' => 'required|string|max:255',
             'cnpj' => 'nullable|string|max:18',
-            'ie' => 'nullable|string|max:20',
+            'inscricao_estadual' => 'nullable|string|max:20',
             'endereco' => 'nullable|string|max:255',
             'codigo_ibge' => 'nullable|string|max:7',
             'telefone' => 'required|string|max:20',
@@ -205,7 +205,7 @@ class LeadController extends Controller
         $lead = Lead::create([
             'razao_social' => $request->razao_social,
             'cnpj' => $request->cnpj,
-            'ie' => $request->ie,
+            'inscricao_estadual' => $request->inscricao_estadual,
             'endereco' => $request->endereco,
             'codigo_ibge' => $request->codigo_ibge,
             'telefone' => $request->telefone,
@@ -250,7 +250,7 @@ class LeadController extends Controller
             $cliente = Cliente::create([
                 'razao_social' => $lead->razao_social,
                 'cnpj' => $lead->cnpj,
-                'ie' => $lead->ie,
+                'inscricao_estadual' => $lead->inscricao_estadual,
                 'endereco' => $lead->endereco,
                 'codigo_ibge' => $lead->codigo_ibge,
                 'telefone' => $lead->telefone,
@@ -346,7 +346,7 @@ class LeadController extends Controller
                 'email' => 'required|email|max:255',
                 'telefone' => 'required|string|max:20',
                 'cnpj' => 'nullable|string|max:20',
-                'ie' => 'nullable|string|max:20',
+                'inscricao_estadual' => 'nullable|string|max:20',
                 'endereco' => 'nullable|string|max:255',
                 'contato' => 'nullable|string|max:255',
                 'tipo_contato' => 'required|string',
@@ -368,7 +368,7 @@ class LeadController extends Controller
             $lead->email = $request->email;
             $lead->telefone = $request->telefone;
             $lead->cnpj = $request->cnpj;
-            $lead->ie = $request->ie;
+            $lead->inscricao_estadual = $request->inscricao_estadual;
             $lead->endereco = $request->endereco;
             $lead->contato = $request->contato;
             $lead->user_id = auth()->id();

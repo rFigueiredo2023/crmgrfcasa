@@ -22,6 +22,7 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadAtendimentoController;
 use App\Http\Controllers\LeadAtendimentoFakeController;
 use App\Http\Controllers\LeadHistoricoController;
+use App\Http\Controllers\AssistenteController;
 
 // Rotas públicas
 Route::middleware('web')->group(function () {
@@ -152,6 +153,10 @@ Route::middleware('web')->group(function () {
                 ], 500);
             }
         });
+
+        // Rotas para o assistente de desenvolvimento
+        Route::get('/dev-assistente', [AssistenteController::class, 'index'])->name('dev-assistente');
+        Route::post('/dev-assistente', [AssistenteController::class, 'perguntar'])->name('dev-assistente.perguntar');
     });
 });
 
@@ -162,3 +167,6 @@ Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-e
 // Nova rota para o controlador especializado de históricos de leads
 Route::get('/lead-historico/{id}', [LeadHistoricoController::class, 'index'])->name('lead.historico.index');
 Route::post('/lead-historico/{id}', [LeadHistoricoController::class, 'store'])->name('lead.historico.store');
+
+// Rota para o assistente de desenvolvimento
+// Route::get('/dev-assistente', App\Http\Livewire\DevAssistant::class)->name('dev-assistente');

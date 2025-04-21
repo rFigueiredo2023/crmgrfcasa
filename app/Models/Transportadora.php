@@ -12,7 +12,7 @@ class Transportadora extends Model
     protected $fillable = [
         'razao_social',
         'cnpj',
-        'ie',
+        'inscricao_estadual',
         'endereco',
         'codigo_ibge',
         'telefone',

@@ -25,7 +25,11 @@ class ClienteController extends Controller
             'endereco' => 'required|string|max:255',
             'codigo_ibge' => 'required|string|max:10',
             'telefone' => 'required|string|max:20',
-            'contato' => 'required|string|max:255'
+            'contato' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'cep' => 'nullable|string|max:10',
+            'municipio' => 'required|string|max:100',
+            'uf' => 'required|string|max:2'
         ]);
 
         $cliente = Cliente::create([
@@ -36,6 +40,10 @@ class ClienteController extends Controller
             'codigo_ibge' => $request->codigo_ibge,
             'telefone' => $request->telefone,
             'contato' => $request->contato,
+            'email' => $request->email,
+            'cep' => $request->cep,
+            'municipio' => $request->municipio,
+            'uf' => $request->uf,
             'user_id' => auth()->id() // Registra o usuário que está cadastrando
         ]);
 
@@ -96,12 +104,17 @@ class ClienteController extends Controller
     public function update(Request $request, Cliente $cliente)
     {
         $validated = $request->validate([
-            'razao_social' => 'required',
-            'cnpj' => 'required',
-            'endereco' => 'required',
-            'codigo_ibge' => 'required',
-            'telefone' => 'required',
-            'contato' => 'required',
+            'razao_social' => 'required|string|max:255',
+            'cnpj' => 'required|string|max:18|unique:clientes,cnpj,'.$cliente->id,
+            'inscricao_estadual' => 'nullable|string|max:20',
+            'endereco' => 'required|string|max:255',
+            'codigo_ibge' => 'required|string|max:10',
+            'telefone' => 'required|string|max:20',
+            'contato' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'cep' => 'nullable|string|max:10',
+            'municipio' => 'required|string|max:100',
+            'uf' => 'required|string|max:2'
         ]);
 
         $cliente->update($validated);

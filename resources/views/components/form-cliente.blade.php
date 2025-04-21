@@ -13,71 +13,79 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label" for="nome">Nome *</label>
-              <input type="text" class="form-control" id="nome" name="nome" required>
-              <div class="invalid-feedback">Nome é obrigatório</div>
+              <label class="form-label" for="razao_social">Razão Social *</label>
+              <input type="text" class="form-control" id="razao_social" name="razao_social" required value="{{ old('razao_social') }}">
+              <div class="invalid-feedback">Razão Social é obrigatória</div>
+              @error('razao_social') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="email">Email *</label>
-              <input type="email" class="form-control" id="email" name="email" required>
-              <div class="invalid-feedback">Email válido é obrigatório</div>
+              <label class="form-label" for="email">Email</label>
+              <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}">
+              @error('email') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label" for="cpf_cnpj">CPF/CNPJ *</label>
-              <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" required>
-              <div class="invalid-feedback">CPF/CNPJ é obrigatório</div>
+              <label class="form-label" for="cnpj">CNPJ *</label>
+              <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ old('cnpj') }}">
+              <div class="invalid-feedback">CNPJ é obrigatório</div>
+              @error('cnpj') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-6">
               <label class="form-label" for="inscricao_estadual">Inscrição Estadual</label>
-              <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual">
+              <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" value="{{ old('inscricao_estadual') }}">
+              @error('inscricao_estadual') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label" for="telefone">Telefone *</label>
-              <input type="text" class="form-control" id="telefone" name="telefone" required>
+              <input type="text" class="form-control" id="telefone" name="telefone" required value="{{ old('telefone') }}">
               <div class="invalid-feedback">Telefone é obrigatório</div>
+              @error('telefone') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="email">Email</label>
-              <input type="email" class="form-control" id="email" name="email">
+              <label class="form-label" for="contato">Contato *</label>
+              <input type="text" class="form-control" id="contato" name="contato" required value="{{ old('contato') }}">
+              <div class="invalid-feedback">Contato é obrigatório</div>
+              @error('contato') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label" for="cep">CEP</label>
-              <input type="text" class="form-control" id="cep" name="cep">
+              <input type="text" class="form-control" id="cep" name="cep" value="{{ old('cep') }}">
+              @error('cep') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-8">
-              <label class="form-label" for="endereco">Endereço</label>
-              <input type="text" class="form-control" id="endereco" name="endereco">
+              <label class="form-label" for="endereco">Endereço *</label>
+              <input type="text" class="form-control" id="endereco" name="endereco" required value="{{ old('endereco') }}">
+              <div class="invalid-feedback">Endereço é obrigatório</div>
+              @error('endereco') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label" for="bairro">Bairro</label>
-              <input type="text" class="form-control" id="bairro" name="bairro">
+              <label class="form-label" for="codigo_ibge">Código IBGE *</label>
+              <input type="text" class="form-control" id="codigo_ibge" name="codigo_ibge" required value="{{ old('codigo_ibge') }}">
+              <div class="invalid-feedback">Código IBGE é obrigatório</div>
+              @error('codigo_ibge') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="cidade">Cidade</label>
-              <input type="text" class="form-control" id="cidade" name="cidade">
+              <label class="form-label" for="municipio">Município *</label>
+              <input type="text" class="form-control" id="municipio" name="municipio" required value="{{ old('municipio') }}">
+              <div class="invalid-feedback">Município é obrigatório</div>
+              @error('municipio') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="estado">Estado</label>
-              <input type="text" class="form-control" id="estado" name="estado">
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-md-12">
-              <label class="form-label" for="observacoes">Observações</label>
-              <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+              <label class="form-label" for="uf">UF *</label>
+              <input type="text" class="form-control" id="uf" name="uf" required maxlength="2" value="{{ old('uf') }}">
+              <div class="invalid-feedback">UF é obrigatória</div>
+              @error('uf') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
           </div>
 
@@ -100,9 +108,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const modalTitle = document.getElementById('modalTitle');
 
   // Aplicar máscaras aos campos
-  if ($("#cpf_cnpj").length) {
-    $("#cpf_cnpj").inputmask({
-      mask: ['999.999.999-99', '99.999.999/9999-99'],
+  if ($("#cnpj").length) {
+    $("#cnpj").inputmask({
+      mask: '99.999.999/9999-99',
       keepStatic: true
     });
   }
@@ -125,9 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
         $.getJSON(`https://viacep.com.br/ws/${cep}/json/`, function(data) {
           if (!data.erro) {
             $("#endereco").val(data.logradouro);
-            $("#bairro").val(data.bairro);
-            $("#cidade").val(data.localidade);
-            $("#estado").val(data.uf);
+            $("#municipio").val(data.localidade);
+            $("#uf").val(data.uf);
+            // Tenta buscar o código IBGE
+            $("#codigo_ibge").val(data.ibge || '');
           }
         });
       }
@@ -151,17 +160,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
           document.getElementById('cliente_id').value = data.id;
-          document.getElementById('nome').value = data.nome;
-          document.getElementById('email').value = data.email;
-          document.getElementById('cpf_cnpj').value = data.cpf_cnpj;
+          document.getElementById('razao_social').value = data.razao_social;
+          document.getElementById('email').value = data.email || '';
+          document.getElementById('cnpj').value = data.cnpj;
           document.getElementById('inscricao_estadual').value = data.inscricao_estadual || '';
           document.getElementById('telefone').value = data.telefone;
-          document.getElementById('cep').value = data.cep;
+          document.getElementById('contato').value = data.contato;
+          document.getElementById('cep').value = data.cep || '';
           document.getElementById('endereco').value = data.endereco;
-          document.getElementById('bairro').value = data.bairro;
-          document.getElementById('cidade').value = data.cidade;
-          document.getElementById('estado').value = data.estado;
-          document.getElementById('observacoes').value = data.observacoes;
+          document.getElementById('codigo_ibge').value = data.codigo_ibge;
+          document.getElementById('municipio').value = data.municipio;
+          document.getElementById('uf').value = data.uf;
         })
         .catch(error => {
           console.error('Erro ao carregar dados do cliente:', error);

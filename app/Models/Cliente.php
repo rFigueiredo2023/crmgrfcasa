@@ -17,6 +17,12 @@ class Cliente extends Model
         'codigo_ibge',
         'telefone',
         'contato',
+        'email',
+        'cep',
+        'municipio',
+        'uf',
+        'tipo_contribuinte',
+        'regime_tributario',
         'user_id'
     ];
 
