@@ -23,6 +23,7 @@ class Cliente extends Model
         'uf',
         'tipo_contribuinte',
         'regime_tributario',
+        'segmento',
         'user_id'
     ];
 

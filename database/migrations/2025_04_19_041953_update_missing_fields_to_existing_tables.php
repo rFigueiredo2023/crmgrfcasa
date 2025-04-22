@@ -32,6 +32,11 @@ return new class extends Migration
             if (!Schema::hasColumn('clientes', 'email')) {
                 $table->string('email')->nullable();
             }
+
+            // Adicionar o campo segmento
+            if (!Schema::hasColumn('clientes', 'segmento')) {
+                $table->string('segmento')->nullable();
+            }
         });
 
         // Modificação na tabela leads
@@ -82,6 +87,32 @@ return new class extends Migration
             }
             if (!Schema::hasColumn('veiculos', 'tipo_proprietario')) {
                 $table->string('tipo_proprietario');
+            }
+
+            // Adicionar campos novos para veículos
+            if (!Schema::hasColumn('veiculos', 'chassi')) {
+                $table->string('chassi')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'km_oleo')) {
+                $table->integer('km_oleo')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'km_correia')) {
+                $table->integer('km_correia')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'segurado_ate')) {
+                $table->date('segurado_ate')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'limite_km_mes')) {
+                $table->integer('limite_km_mes')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'responsavel_atual')) {
+                $table->string('responsavel_atual')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'antt_rntrc')) {
+                $table->string('antt_rntrc')->nullable();
+            }
+            if (!Schema::hasColumn('veiculos', 'ie_proprietario')) {
+                $table->string('ie_proprietario')->nullable();
             }
         });
     }

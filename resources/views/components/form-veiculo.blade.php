@@ -28,6 +28,10 @@
                         <input type="number" class="form-control" id="ano_fabricacao" name="ano_fabricacao" required>
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label" for="chassi">Chassi</label>
+                        <input type="text" class="form-control" id="chassi" name="chassi">
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label" for="mes_licenca">Mês da Licença</label>
                         <input type="text" class="form-control" id="mes_licenca" name="mes_licenca" required>
                     </div>
@@ -41,51 +45,35 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="uf">UF</label>
-                        <select class="form-select" id="uf" name="uf" required>
-                            <option value="">Selecione o estado</option>
-                            <option value="AC">Acre</option>
-                            <option value="AL">Alagoas</option>
-                            <option value="AP">Amapá</option>
-                            <option value="AM">Amazonas</option>
-                            <option value="BA">Bahia</option>
-                            <option value="CE">Ceará</option>
-                            <option value="DF">Distrito Federal</option>
-                            <option value="ES">Espírito Santo</option>
-                            <option value="GO">Goiás</option>
-                            <option value="MA">Maranhão</option>
-                            <option value="MT">Mato Grosso</option>
-                            <option value="MS">Mato Grosso do Sul</option>
-                            <option value="MG">Minas Gerais</option>
-                            <option value="PA">Pará</option>
-                            <option value="PB">Paraíba</option>
-                            <option value="PR">Paraná</option>
-                            <option value="PE">Pernambuco</option>
-                            <option value="PI">Piauí</option>
-                            <option value="RJ">Rio de Janeiro</option>
-                            <option value="RN">Rio Grande do Norte</option>
-                            <option value="RS">Rio Grande do Sul</option>
-                            <option value="RO">Rondônia</option>
-                            <option value="RR">Roraima</option>
-                            <option value="SC">Santa Catarina</option>
-                            <option value="SP">São Paulo</option>
-                            <option value="SE">Sergipe</option>
-                            <option value="TO">Tocantins</option>
-                        </select>
+                        <input type="text" class="form-control" id="uf" name="uf" value="SP" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="km_oleo">KM Óleo</label>
+                        <input type="number" class="form-control" id="km_oleo" name="km_oleo">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="km_correia">KM Correia</label>
+                        <input type="number" class="form-control" id="km_correia" name="km_correia">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="segurado_ate">Segurado até</label>
+                        <input type="date" class="form-control" id="segurado_ate" name="segurado_ate">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="limite_km_mes">Limite KM/Mês</label>
+                        <input type="number" class="form-control" id="limite_km_mes" name="limite_km_mes">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="tara">Tara (kg)</label>
-                        <input type="number" step="0.01" class="form-control" id="tara" name="tara"
-                            required>
+                        <input type="number" step="0.01" class="form-control" id="tara" name="tara" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="capacidade_kg">Capacidade em KG</label>
-                        <input type="number" step="0.01" class="form-control" id="capacidade_kg"
-                            name="capacidade_kg" required>
+                        <input type="number" step="0.01" class="form-control" id="capacidade_kg" name="capacidade_kg" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="capacidade_m3">Capacidade em M³</label>
-                        <input type="number" step="0.01" class="form-control" id="capacidade_m3"
-                            name="capacidade_m3" required>
+                        <input type="number" step="0.01" class="form-control" id="capacidade_m3" name="capacidade_m3" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="tipo_rodagem">Tipo de Rodagem</label>
@@ -104,9 +92,11 @@
                         <select class="form-select" id="tipo_carroceria" name="tipo_carroceria" required>
                             <option value="">Selecione...</option>
                             <option value="aberta">Aberta</option>
-                            <option value="bau">Baú</option>
-                            <option value="outros">Outros</option>
+                            <option value="fechada-bau">Fechada/Baú</option>
+                            <option value="granelera">Graneleira</option>
+                            <option value="porta-container">Porta Container</option>
                             <option value="slider">Slider</option>
+                            <option value="outros">Outros</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -114,23 +104,39 @@
                         <input type="text" class="form-control" id="renavam" name="renavam" required>
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label" for="responsavel_atual">Responsável Atual</label>
+                        <input type="text" class="form-control" id="responsavel_atual" name="responsavel_atual">
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label" for="cpf_cnpj_proprietario">CPF/CNPJ do Proprietário</label>
-                        <input type="text" class="form-control" id="cpf_cnpj_proprietario"
-                            name="cpf_cnpj_proprietario" required>
+                        <input type="text" class="form-control" id="cpf_cnpj_proprietario" name="cpf_cnpj_proprietario" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="proprietario">Proprietário</label>
                         <input type="text" class="form-control" id="proprietario" name="proprietario" required>
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label" for="antt_rntrc">ANTT / RNTRC</label>
+                        <input type="text" class="form-control" id="antt_rntrc" name="antt_rntrc">
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label" for="uf_proprietario">UF do Proprietário</label>
-                        <input type="text" class="form-control" id="uf_proprietario" name="uf_proprietario"
-                            required>
+                        <input type="text" class="form-control" id="uf_proprietario" name="uf_proprietario" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="ie_proprietario">IE do Proprietário</label>
+                        <input type="text" class="form-control" id="ie_proprietario" name="ie_proprietario">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="tipo_proprietario">Tipo de Proprietário</label>
-                        <input type="text" class="form-control" id="tipo_proprietario" name="tipo_proprietario"
-                            required>
+                        <select class="form-select" id="tipo_proprietario" name="tipo_proprietario" required>
+                            <option value="">Selecione...</option>
+                            <option value="agregado">Agregado</option>
+                            <option value="independente">Independente</option>
+                            <option value="locacao">Locação</option>
+                            <option value="proprio">Próprio</option>
+                            <option value="outros">Outros</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="detalhes">Detalhes</label>

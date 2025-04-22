@@ -29,7 +29,8 @@ class ClienteController extends Controller
             'email' => 'nullable|email|max:255',
             'cep' => 'nullable|string|max:10',
             'municipio' => 'required|string|max:100',
-            'uf' => 'required|string|max:2'
+            'uf' => 'required|string|max:2',
+            'segmento' => 'nullable|string|max:100'
         ]);
 
         $cliente = Cliente::create([
@@ -44,6 +45,7 @@ class ClienteController extends Controller
             'cep' => $request->cep,
             'municipio' => $request->municipio,
             'uf' => $request->uf,
+            'segmento' => $request->segmento,
             'user_id' => auth()->id() // Registra o usuário que está cadastrando
         ]);
 
@@ -103,9 +105,9 @@ class ClienteController extends Controller
 
     public function update(Request $request, Cliente $cliente)
     {
-        $validated = $request->validate([
+        $request->validate([
             'razao_social' => 'required|string|max:255',
-            'cnpj' => 'required|string|max:18|unique:clientes,cnpj,'.$cliente->id,
+            'cnpj' => 'required|string|max:18|unique:clientes,cnpj,' . $cliente->id,
             'inscricao_estadual' => 'nullable|string|max:20',
             'endereco' => 'required|string|max:255',
             'codigo_ibge' => 'required|string|max:10',
@@ -114,10 +116,24 @@ class ClienteController extends Controller
             'email' => 'nullable|email|max:255',
             'cep' => 'nullable|string|max:10',
             'municipio' => 'required|string|max:100',
-            'uf' => 'required|string|max:2'
+            'uf' => 'required|string|max:2',
+            'segmento' => 'nullable|string|max:100'
         ]);
 
-        $cliente->update($validated);
+        $cliente->update([
+            'razao_social' => $request->razao_social,
+            'cnpj' => $request->cnpj,
+            'inscricao_estadual' => $request->inscricao_estadual,
+            'endereco' => $request->endereco,
+            'codigo_ibge' => $request->codigo_ibge,
+            'telefone' => $request->telefone,
+            'contato' => $request->contato,
+            'email' => $request->email,
+            'cep' => $request->cep,
+            'municipio' => $request->municipio,
+            'uf' => $request->uf,
+            'segmento' => $request->segmento
+        ]);
 
         return redirect()->back()->with('success', 'Cliente atualizado com sucesso!');
     }

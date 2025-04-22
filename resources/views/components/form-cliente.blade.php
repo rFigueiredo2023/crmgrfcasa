@@ -55,6 +55,14 @@
           </div>
 
           <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="segmento">Segmento</label>
+              <input type="text" class="form-control" id="segmento" name="segmento" value="{{ old('segmento') }}">
+              @error('segmento') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+          </div>
+
+          <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label" for="cep">CEP</label>
               <input type="text" class="form-control" id="cep" name="cep" value="{{ old('cep') }}">
@@ -166,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
           document.getElementById('inscricao_estadual').value = data.inscricao_estadual || '';
           document.getElementById('telefone').value = data.telefone;
           document.getElementById('contato').value = data.contato;
+          document.getElementById('segmento').value = data.segmento || '';
           document.getElementById('cep').value = data.cep || '';
           document.getElementById('endereco').value = data.endereco;
           document.getElementById('codigo_ibge').value = data.codigo_ibge;

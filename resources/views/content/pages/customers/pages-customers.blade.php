@@ -203,6 +203,10 @@
                             <label class="form-label" for="add_contato">Contato</label>
                             <input type="text" class="form-control" id="add_contato" name="contato" required>
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label" for="add_segmento">Segmento</label>
+                            <input type="text" class="form-control" id="add_segmento" name="segmento">
+                        </div>
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary me-sm-3 me-1">Salvar</button>
                             <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -254,6 +258,10 @@
                         <div class="col-md-12">
                             <label class="form-label" for="edit_contato">Contato</label>
                             <input type="text" class="form-control" id="edit_contato" name="contato" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label" for="edit_segmento">Segmento</label>
+                            <input type="text" class="form-control" id="edit_segmento" name="segmento">
                         </div>
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary me-sm-3 me-1">Atualizar</button>

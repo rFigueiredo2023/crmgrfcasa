@@ -152,6 +152,7 @@
                         form.querySelector('#edit_codigo_ibge').value = data.codigo_ibge || '';
                         form.querySelector('#edit_telefone').value = data.telefone || '';
                         form.querySelector('#edit_contato').value = data.contato || '';
+                        form.querySelector('#edit_segmento').value = data.segmento || '';
                     })
                     .catch(error => {
                         console.error('Erro ao carregar dados do cliente:', error);
