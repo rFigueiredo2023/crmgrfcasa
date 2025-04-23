@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            if (!Schema::hasColumn('clientes', 'segmento')) {
-                $table->string('segmento')->nullable()->after('uf');
-            }
+            $table->dropColumn('tipo_contribuinte');
+            $table->dropColumn('regime_tributario');
         });
     }
 
@@ -24,9 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            if (Schema::hasColumn('clientes', 'segmento')) {
-                $table->dropColumn('segmento');
-            }
+            $table->enum('tipo_contribuinte', ['Contribuinte', 'Não Contribuinte', 'Isento'])->default('Contribuinte')->after('user_id');
+            $table->enum('regime_tributario', ['Simples Nacional', 'Lucro Presumido', 'Lucro Real'])->default('Simples Nacional')->after('tipo_contribuinte');
         });
     }
 };

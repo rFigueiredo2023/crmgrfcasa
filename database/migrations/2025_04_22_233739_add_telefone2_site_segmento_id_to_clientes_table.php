@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            if (!Schema::hasColumn('clientes', 'segmento')) {
-                $table->string('segmento')->nullable()->after('uf');
-            }
+            $table->string('telefone2')->nullable();
+            $table->string('site')->nullable();
+            $table->unsignedBigInteger('segmento_id')->nullable();
+
+            $table->foreign('segmento_id')->references('id')->on('segmentos')->nullOnDelete();
         });
     }
 
@@ -24,9 +26,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            if (Schema::hasColumn('clientes', 'segmento')) {
-                $table->dropColumn('segmento');
-            }
+            $table->dropForeign(['segmento_id']);
+            $table->dropColumn(['telefone2', 'site', 'segmento_id']);
         });
     }
 };

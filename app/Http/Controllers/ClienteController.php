@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class ClienteController extends Controller
 {
@@ -25,12 +26,15 @@ class ClienteController extends Controller
             'endereco' => 'required|string|max:255',
             'codigo_ibge' => 'required|string|max:10',
             'telefone' => 'required|string|max:20',
+            'telefone2' => 'nullable|string|max:20',
+            'site' => 'nullable|url|max:255',
             'contato' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'cep' => 'nullable|string|max:10',
             'municipio' => 'required|string|max:100',
             'uf' => 'required|string|max:2',
-            'segmento' => 'nullable|string|max:100'
+            'segmento' => 'nullable|string|max:100',
+            'segmento_id' => 'nullable|exists:segmentos,id'
         ]);
 
         $cliente = Cliente::create([
@@ -40,12 +44,15 @@ class ClienteController extends Controller
             'endereco' => $request->endereco,
             'codigo_ibge' => $request->codigo_ibge,
             'telefone' => $request->telefone,
+            'telefone2' => $request->telefone2,
+            'site' => $request->site,
             'contato' => $request->contato,
             'email' => $request->email,
             'cep' => $request->cep,
             'municipio' => $request->municipio,
             'uf' => $request->uf,
             'segmento' => $request->segmento,
+            'segmento_id' => $request->segmento_id,
             'user_id' => auth()->id() // Registra o usuário que está cadastrando
         ]);
 
@@ -112,12 +119,15 @@ class ClienteController extends Controller
             'endereco' => 'required|string|max:255',
             'codigo_ibge' => 'required|string|max:10',
             'telefone' => 'required|string|max:20',
+            'telefone2' => 'nullable|string|max:20',
+            'site' => 'nullable|url|max:255',
             'contato' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'cep' => 'nullable|string|max:10',
             'municipio' => 'required|string|max:100',
             'uf' => 'required|string|max:2',
-            'segmento' => 'nullable|string|max:100'
+            'segmento' => 'nullable|string|max:100',
+            'segmento_id' => 'nullable|exists:segmentos,id'
         ]);
 
         $cliente->update([
@@ -127,12 +137,15 @@ class ClienteController extends Controller
             'endereco' => $request->endereco,
             'codigo_ibge' => $request->codigo_ibge,
             'telefone' => $request->telefone,
+            'telefone2' => $request->telefone2,
+            'site' => $request->site,
             'contato' => $request->contato,
             'email' => $request->email,
             'cep' => $request->cep,
             'municipio' => $request->municipio,
             'uf' => $request->uf,
-            'segmento' => $request->segmento
+            'segmento' => $request->segmento,
+            'segmento_id' => $request->segmento_id
         ]);
 
         return redirect()->back()->with('success', 'Cliente atualizado com sucesso!');
@@ -291,6 +304,37 @@ class ClienteController extends Controller
             return response()->json($cliente);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erro ao buscar cliente: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Busca dados de um CNPJ na API ReceitaWS
+     * Serve como proxy para evitar problemas de CORS
+     */
+    public function consultarCnpj(Request $request, $cnpj)
+    {
+        try {
+            // Remove caracteres não numéricos
+            $cnpj = preg_replace('/\D/', '', $cnpj);
+
+            // Verifica se o CNPJ tem 14 dígitos
+            if (strlen($cnpj) !== 14) {
+                return response()->json([
+                    'status' => 'ERROR',
+                    'message' => 'CNPJ inválido'
+                ], 400);
+            }
+
+            // Faz a requisição para a API ReceitaWS
+            $response = Http::get("https://www.receitaws.com.br/v1/cnpj/{$cnpj}");
+
+            // Retorna a resposta da API
+            return $response->json();
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'ERROR',
+                'message' => 'Erro ao consultar CNPJ: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

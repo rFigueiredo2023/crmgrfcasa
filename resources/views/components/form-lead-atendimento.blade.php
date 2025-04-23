@@ -13,14 +13,25 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label" for="nome">Nome *</label>
-              <input type="text" class="form-control" id="nome" name="nome" required>
-              <div class="invalid-feedback">Nome é obrigatório</div>
+              <label class="form-label" for="razao_social">Razão Social *</label>
+              <input type="text" class="form-control" id="razao_social" name="razao_social" required>
+              <div class="invalid-feedback">Razão Social é obrigatória</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="email">Email *</label>
-              <input type="email" class="form-control" id="email" name="email" required>
+              <label class="form-label" for="email">Email</label>
+              <input type="email" class="form-control" id="email" name="email">
               <div class="invalid-feedback">Email válido é obrigatório</div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="cnpj">CNPJ</label>
+              <input type="text" class="form-control" id="cnpj" name="cnpj">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="inscricao_estadual">Inscrição Estadual</label>
+              <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual">
             </div>
           </div>
 
@@ -29,6 +40,50 @@
               <label class="form-label" for="telefone">Telefone *</label>
               <input type="text" class="form-control" id="telefone" name="telefone" required>
               <div class="invalid-feedback">Telefone é obrigatório</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="contato">Contato *</label>
+              <input type="text" class="form-control" id="contato" name="contato" required>
+              <div class="invalid-feedback">Contato é obrigatório</div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="cep">CEP</label>
+              <input type="text" class="form-control" id="cep" name="cep">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="endereco">Endereço</label>
+              <input type="text" class="form-control" id="endereco" name="endereco">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label" for="municipio">Município</label>
+              <input type="text" class="form-control" id="municipio" name="municipio">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="uf">UF</label>
+              <input type="text" class="form-control" id="uf" name="uf" maxlength="2">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="codigo_ibge">Código IBGE</label>
+              <input type="text" class="form-control" id="codigo_ibge" name="codigo_ibge">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="status">Status do Lead *</label>
+              <select class="form-select" id="status_lead" name="status" required>
+                <option value="Frio">Frio</option>
+                <option value="Morno">Morno</option>
+                <option value="Quente">Quente</option>
+                <option value="Convertido">Convertido</option>
+              </select>
+              <div class="invalid-feedback">Status do Lead é obrigatório</div>
             </div>
             <div class="col-md-6">
               <label class="form-label" for="origem">Origem *</label>
@@ -41,13 +96,6 @@
                 <option value="outro">Outro</option>
               </select>
               <div class="invalid-feedback">Origem é obrigatória</div>
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-md-12">
-              <label class="form-label" for="interesse">Interesse</label>
-              <input type="text" class="form-control" id="interesse" name="interesse">
             </div>
           </div>
 
@@ -143,6 +191,34 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  if ($("#cnpj").length) {
+    $("#cnpj").inputmask({
+      mask: '99.999.999/9999-99',
+      keepStatic: true
+    });
+  }
+
+  if ($("#cep").length) {
+    $("#cep").inputmask('99999-999');
+
+    // Buscar endereço ao preencher CEP
+    $("#cep").blur(function() {
+      const cep = $(this).val().replace(/\D/g, '');
+
+      if (cep.length === 8) {
+        $.getJSON(`https://viacep.com.br/ws/${cep}/json/`, function(data) {
+          if (!data.erro) {
+            $("#endereco").val(data.logradouro);
+            $("#municipio").val(data.localidade);
+            $("#uf").val(data.uf);
+            // Tenta buscar o código IBGE
+            $("#codigo_ibge").val(data.ibge || '');
+          }
+        });
+      }
+    });
+  }
+
   // Ao abrir o modal para editar
   $('#leadModal').on('show.bs.modal', function(event) {
     const button = $(event.relatedTarget);
@@ -167,12 +243,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
           document.getElementById('lead_id').value = data.id;
-          document.getElementById('nome').value = data.nome;
-          document.getElementById('email').value = data.email;
+          document.getElementById('razao_social').value = data.razao_social;
+          document.getElementById('cnpj').value = data.cnpj || '';
+          document.getElementById('inscricao_estadual').value = data.inscricao_estadual || '';
+          document.getElementById('email').value = data.email || '';
           document.getElementById('telefone').value = data.telefone;
+          document.getElementById('contato').value = data.contato;
+          document.getElementById('cep').value = data.cep || '';
+          document.getElementById('endereco').value = data.endereco || '';
+          document.getElementById('municipio').value = data.municipio || '';
+          document.getElementById('uf').value = data.uf || '';
+          document.getElementById('codigo_ibge').value = data.codigo_ibge || '';
+          document.getElementById('status_lead').value = data.status || 'Frio';
           document.getElementById('origem').value = data.origem;
-          document.getElementById('interesse').value = data.interesse;
-          document.getElementById('observacoes').value = data.observacoes;
+          document.getElementById('observacoes').value = data.observacoes || '';
         })
         .catch(error => {
           console.error('Erro ao carregar dados do lead:', error);

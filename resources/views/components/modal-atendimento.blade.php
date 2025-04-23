@@ -138,9 +138,23 @@ document.addEventListener('DOMContentLoaded', function() {
   carregarResponsaveis();
 
   function carregarResponsaveis() {
+    // Adicionamos tratamento para falha silenciosa na API
     fetch('/api/usuarios')
-      .then(response => response.json())
+      .then(response => {
+        // Verificar se a resposta foi bem-sucedida (status 200-299)
+        if (!response.ok) {
+          // Em vez de lançar erro, apenas retornar array vazio e tratar silenciosamente
+          return [];
+        }
+        return response.json();
+      })
       .then(data => {
+        // Verificar se data é array (pode não ser se a API retornar HTML em vez de JSON)
+        if (!Array.isArray(data)) {
+          // Silenciosamente usar array vazio
+          data = [];
+        }
+
         const responsavelSelect = document.getElementById('responsavel_id');
         // Limpar opções existentes
         responsavelSelect.innerHTML = '<option value="">Selecione</option>';
@@ -154,7 +168,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       })
       .catch(error => {
-        console.error('Erro ao carregar responsáveis:', error);
+        // Apenas log simples, sem mostrar o erro completo
+        if (localStorage.getItem('debug') === 'true') {
+          console.error('Erro ao carregar responsáveis');
+        }
+
+        // Certificar que o select existe e tem pelo menos a opção default
+        const responsavelSelect = document.getElementById('responsavel_id');
+        if (responsavelSelect) {
+          responsavelSelect.innerHTML = '<option value="">Selecione</option>';
+        }
       });
   }
 

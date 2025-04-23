@@ -16,14 +16,15 @@ class Cliente extends Model
         'endereco',
         'codigo_ibge',
         'telefone',
+        'telefone2',
         'contato',
         'email',
+        'site',
         'cep',
         'municipio',
         'uf',
-        'tipo_contribuinte',
-        'regime_tributario',
         'segmento',
+        'segmento_id',
         'user_id'
     ];
 
@@ -60,5 +61,11 @@ class Cliente extends Model
     public function ultimoHistorico()
     {
         return $this->morphOne(Historico::class, 'historicable')->latest('data');
+    }
+
+    // Relacionamento com Segmento
+    public function segmento()
+    {
+        return $this->belongsTo(Segmento::class);
     }
 }

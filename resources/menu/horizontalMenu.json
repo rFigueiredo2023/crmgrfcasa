@@ -17,7 +17,19 @@
       "name": "Atendimentos",
       "icon": "menu-icon tf-icons bx bx-phone-call",
       "slug": "pages-atendimentos"
+    },
+    {
+      "name": "Admin",
+      "icon": "menu-icon tf-icons bx bx-shield",
+      "slug": "admin",
+      "submenu": [
+        {
+          "url": "/segmentos",
+          "name": "Segmentos",
+          "slug": "segmentos.index",
+          "icon": "menu-icon tf-icons bx bx-category"
+        }
+      ]
     }
-
   ]
 }

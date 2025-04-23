@@ -17,19 +17,13 @@
             $activeClass = 'active';
         }
         elseif (isset($menu->submenu)) {
-          if (gettype($menu->slug) === 'array') {
-            foreach($menu->slug as $slug){
-              if (str_contains($currentRouteName,$slug) and strpos($currentRouteName,$slug) === 0) {
-                $activeClass = 'active';
-              }
-            }
-          }
-          else{
-            if (str_contains($currentRouteName,$menu->slug) and strpos($currentRouteName,$menu->slug) === 0) {
+          $slugArray = is_array($menu->slug) ? $menu->slug : [$menu->slug];
+
+          foreach ($slugArray as $slug) {
+            if (str_contains($currentRouteName, $slug) && strpos($currentRouteName, $slug) === 0) {
               $activeClass = 'active';
             }
           }
-
         }
       @endphp
 

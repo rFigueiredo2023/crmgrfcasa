@@ -12,6 +12,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TransportadoraController;
 use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\AtendimentoController;
+use App\Http\Controllers\SegmentoController;
 use App\Models\Cliente;
 use App\Models\Atendimento;
 // Importa os controllers dos Dashboards
@@ -61,6 +62,16 @@ Route::middleware('web')->group(function () {
             ->name('dashboard.financeiro')
             ->middleware('financeiro');
 
+        // Segmentos (protegidos pelo middleware admin)
+        Route::middleware('admin')->group(function () {
+            Route::get('/segmentos', [SegmentoController::class, 'index'])->name('segmentos.index');
+            Route::post('/segmentos', [SegmentoController::class, 'store'])->name('segmentos.store');
+            Route::get('/segmentos/create', [SegmentoController::class, 'create'])->name('segmentos.create');
+            Route::get('/segmentos/{segmento}/edit', [SegmentoController::class, 'edit'])->name('segmentos.edit');
+            Route::put('/segmentos/{segmento}', [SegmentoController::class, 'update'])->name('segmentos.update');
+            Route::delete('/segmentos/{segmento}', [SegmentoController::class, 'destroy'])->name('segmentos.destroy');
+        });
+
         // Customers
         Route::prefix('customers')->group(function () {
             Route::get('/', [Custormers::class, 'index'])->name('pages-customers');
@@ -75,6 +86,8 @@ Route::middleware('web')->group(function () {
             Route::post('/clientes/{cliente}/historico', [ClienteController::class, 'storeHistorico'])->name('clientes.historico.store');
             Route::get('/api/clientes/{cliente}/atendimentos', [ClienteController::class, 'atendimentos'])
                 ->name('clientes.atendimentos');
+            // Nova rota para o proxy de consulta de CNPJ
+            Route::get('/api/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('api.consultar-cnpj');
 
             // Transportadoras
             Route::post('/transportadoras', [TransportadoraController::class, 'store'])->name('transportadoras.store');
@@ -170,3 +183,14 @@ Route::post('/lead-historico/{id}', [LeadHistoricoController::class, 'store'])->
 
 // Rota para o assistente de desenvolvimento
 // Route::get('/dev-assistente', App\Http\Livewire\DevAssistant::class)->name('dev-assistente');
+
+// API interna - Usuários
+Route::get('/api/usuarios', function() {
+    // Retornar lista de usuários com role vendedor/atendimento
+    $usuarios = \App\Models\User::whereIn('role', ['admin', 'vendas'])
+        ->select('id', 'name')
+        ->orderBy('name')
+        ->get();
+
+    return response()->json($usuarios);
+});

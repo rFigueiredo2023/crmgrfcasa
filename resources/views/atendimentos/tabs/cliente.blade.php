@@ -80,16 +80,18 @@
 @push('scripts')
 <script>
     // Busca de clientes
-    const buscaInput = document.getElementById('busca-cliente');
-    buscaInput.addEventListener('input', function(e) {
-        const busca = e.target.value.toLowerCase();
-        const linhas = document.querySelectorAll('tbody tr');
+    (function() {
+        const buscaInput = document.getElementById('busca-cliente');
+        buscaInput.addEventListener('input', function(e) {
+            const busca = e.target.value.toLowerCase();
+            const linhas = document.querySelectorAll('tbody tr');
 
-        linhas.forEach(function(linha) {
-            const texto = linha.textContent.toLowerCase();
-            linha.style.display = texto.includes(busca) ? '' : 'none';
+            linhas.forEach(function(linha) {
+                const texto = linha.textContent.toLowerCase();
+                linha.style.display = texto.includes(busca) ? '' : 'none';
+            });
         });
-    });
+    })();
 
     // Inicializa tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))

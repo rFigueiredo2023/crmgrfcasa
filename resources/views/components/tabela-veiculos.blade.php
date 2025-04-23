@@ -80,19 +80,21 @@
 
 @push('scripts')
 <script>
-    // Busca de veículos
-    const buscaInput = document.getElementById('busca-veiculo');
-    if (buscaInput) {
+    // Script para busca
+    (function() {
+      const buscaInput = document.getElementById('busca-veiculo');
+      if (buscaInput) {
         buscaInput.addEventListener('input', function(e) {
-            const busca = e.target.value.toLowerCase();
-            const linhas = document.querySelectorAll('tbody tr');
+          const busca = e.target.value.toLowerCase();
+          const linhas = document.querySelectorAll('tbody tr');
 
-            linhas.forEach(function(linha) {
-                const texto = linha.textContent.toLowerCase();
-                linha.style.display = texto.includes(busca) ? '' : 'none';
-            });
+          linhas.forEach(function(linha) {
+            const texto = linha.textContent.toLowerCase();
+            linha.style.display = texto.includes(busca) ? '' : 'none';
+          });
         });
-    }
+      }
+    })();
 
     // Função para confirmar exclusão
     function confirmarExclusao(id) {

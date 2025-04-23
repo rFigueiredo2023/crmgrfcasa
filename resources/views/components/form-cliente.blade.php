@@ -28,7 +28,7 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label" for="cnpj">CNPJ *</label>
-              <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ old('cnpj') }}">
+              <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ old('cnpj') }}" onblur="buscarCNPJ(this.value)">
               <div class="invalid-feedback">CNPJ é obrigatório</div>
               @error('cnpj') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
@@ -115,40 +115,56 @@ document.addEventListener('DOMContentLoaded', function() {
   const clienteForm = document.getElementById('clienteForm');
   const modalTitle = document.getElementById('modalTitle');
 
-  // Aplicar máscaras aos campos
-  if ($("#cnpj").length) {
-    $("#cnpj").inputmask({
-      mask: '99.999.999/9999-99',
-      keepStatic: true
-    });
+  // Código de máscara com verificação de segurança
+  if (window.jQuery && jQuery().inputmask && $("#cnpj").length) {
+    try {
+      $("#cnpj").inputmask({
+        mask: '99.999.999/9999-99',
+        keepStatic: true
+      });
+    } catch (e) {
+      console.warn("Erro ao aplicar máscara no CNPJ:", e);
+    }
   }
 
-  if ($("#telefone").length) {
-    $("#telefone").inputmask({
-      mask: ['(99) 9999-9999', '(99) 99999-9999'],
-      keepStatic: true
-    });
+  if (window.jQuery && jQuery().inputmask && $("#telefone").length) {
+    try {
+      $("#telefone").inputmask({
+        mask: ['(99) 9999-9999', '(99) 99999-9999'],
+        keepStatic: true
+      });
+    } catch (e) {
+      console.warn("Erro ao aplicar máscara no telefone:", e);
+    }
   }
 
-  if ($("#cep").length) {
-    $("#cep").inputmask('99999-999');
+  if (window.jQuery && jQuery().inputmask && $("#cep").length) {
+    try {
+      $("#cep").inputmask('99999-999');
+    } catch (e) {
+      console.warn("Erro ao aplicar máscara no CEP:", e);
+    }
 
     // Buscar endereço ao preencher CEP
-    $("#cep").blur(function() {
-      const cep = $(this).val().replace(/\D/g, '');
+    try {
+      $("#cep").blur(function() {
+        const cep = $(this).val().replace(/\D/g, '');
 
-      if (cep.length === 8) {
-        $.getJSON(`https://viacep.com.br/ws/${cep}/json/`, function(data) {
-          if (!data.erro) {
-            $("#endereco").val(data.logradouro);
-            $("#municipio").val(data.localidade);
-            $("#uf").val(data.uf);
-            // Tenta buscar o código IBGE
-            $("#codigo_ibge").val(data.ibge || '');
-          }
-        });
-      }
-    });
+        if (cep.length === 8) {
+          $.getJSON(`https://viacep.com.br/ws/${cep}/json/`, function(data) {
+            if (!data.erro) {
+              $("#endereco").val(data.logradouro);
+              $("#municipio").val(data.localidade);
+              $("#uf").val(data.uf);
+              // Tenta buscar o código IBGE
+              $("#codigo_ibge").val(data.ibge || '');
+            }
+          });
+        }
+      });
+    } catch (e) {
+      console.warn("Erro ao configurar busca de CEP:", e);
+    }
   }
 
   // Ao abrir o modal para editar
@@ -259,5 +275,134 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   });
+
+  // Adicionar evento de busca de CNPJ de forma segura
+  try {
+    const camposCNPJ = document.querySelectorAll('input[name="cnpj"]');
+    camposCNPJ.forEach(function(input) {
+      input.addEventListener('blur', function() {
+        buscarCNPJSimples(this.value);
+      });
+    });
+
+    // Também adicionar via jQuery para compatibilidade com modais carregados depois
+    if (window.jQuery) {
+      $(document).on('blur', 'input[name="cnpj"]', function() {
+        buscarCNPJSimples(this.value);
+      });
+    }
+  } catch (e) {
+    console.error("Erro ao configurar eventos de CNPJ:", e);
+  }
 });
+
+// Função simplificada para buscar CNPJ sem depender de bibliotecas externas
+function buscarCNPJSimples(cnpj) {
+  console.log('Função buscarCNPJSimples chamada com:', cnpj);
+  // Remove caracteres não numéricos
+  cnpj = cnpj.replace(/\D/g, '');
+  console.log('CNPJ sanitizado:', cnpj);
+
+  if (cnpj.length !== 14) {
+    console.log('CNPJ inválido - não tem 14 dígitos');
+    // alert('CNPJ inválido.');
+    return;
+  }
+
+  // Feedback via console em vez de alert
+  console.log('Consultando CNPJ...');
+
+  // URL do proxy Laravel
+  const apiUrl = `/customers/api/consultar-cnpj/${cnpj}`;
+  console.log('Consultando URL do proxy:', apiUrl);
+
+  // Requisição com fetch
+  fetch(apiUrl)
+    .then(response => {
+      console.log('Status da resposta:', response.status);
+      // Verificar se a resposta tem conteúdo antes de tentar parsear JSON
+      if (response.status !== 200) {
+        throw new Error(`Erro na requisição: ${response.status}`);
+      }
+
+      return response.text().then(text => {
+        // Verificar se o texto é um JSON válido antes de parsear
+        if (!text || text.trim() === '') {
+          throw new Error('Resposta vazia recebida da API');
+        }
+
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error('Erro ao parsear JSON:', text);
+          throw new Error('Resposta inválida recebida da API');
+        }
+      });
+    })
+    .then(data => {
+      console.log('Dados recebidos da API:', data);
+
+      if (data.status === 'ERROR') {
+        console.log('API retornou erro:', data.message);
+        // alert('Não foi possível consultar o CNPJ.');
+        return;
+      }
+
+      // Preenchimento dos campos
+      document.querySelectorAll('input[name="razao_social"]').forEach(el => el.value = data.nome || '');
+      document.querySelectorAll('input[name="inscricao_estadual"]').forEach(el => el.value = data.inscricao_estadual || '');
+      document.querySelectorAll('input[name="endereco"]').forEach(el => el.value = `${data.logradouro || ''}, ${data.numero || ''}`);
+      document.querySelectorAll('input[name="municipio"]').forEach(el => el.value = data.municipio || '');
+      document.querySelectorAll('input[name="uf"]').forEach(el => el.value = data.uf || '');
+      document.querySelectorAll('input[name="cep"]').forEach(el => el.value = data.cep || '');
+
+      // Se o IBGE já veio na resposta da ReceitaWS, usar ele
+      if (data.ibge) {
+        document.querySelectorAll('input[name="codigo_ibge"]').forEach(el => el.value = data.ibge || '');
+      }
+      // Se não veio o IBGE, mas veio o município e UF, consultar a BrasilAPI
+      else if (data.municipio && data.uf) {
+        // Formatar município e UF para o formato esperado pela BrasilAPI
+        const municipio = (data.municipio || '').toUpperCase().replace(/\s+/g, '-');
+        const uf = (data.uf || '').toUpperCase();
+        const cidadeFormatada = `${municipio}-${uf}`;
+
+        console.log('Consultando BrasilAPI para código IBGE:', cidadeFormatada);
+
+        // Buscar IBGE com a BrasilAPI
+        fetch(`https://brasilapi.com.br/api/ibge/municipios/v1/${uf}`)
+          .then(res => res.json())
+          .then(municipios => {
+            // BrasilAPI retorna uma lista de municípios do estado
+            // Precisamos encontrar o que corresponde ao nome do município
+            const municipioNormalizado = data.municipio.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // Procurar o município na lista retornada
+            const municipioEncontrado = municipios.find(m => {
+              const nomeNormalizado = m.nome.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              return nomeNormalizado === municipioNormalizado ||
+                     nomeNormalizado.includes(municipioNormalizado) ||
+                     municipioNormalizado.includes(nomeNormalizado);
+            });
+
+            if (municipioEncontrado && municipioEncontrado.codigo_ibge) {
+              console.log('Código IBGE encontrado:', municipioEncontrado.codigo_ibge);
+              document.querySelectorAll('input[name="codigo_ibge"]').forEach(el => el.value = municipioEncontrado.codigo_ibge);
+            } else {
+              console.warn('Não foi possível encontrar o código IBGE para', data.municipio, data.uf);
+            }
+          })
+          .catch(err => {
+            console.warn('Não foi possível buscar o código IBGE na BrasilAPI:', err);
+          });
+      }
+
+      // Feedback de conclusão via console
+      console.log('Consulta concluída com sucesso!');
+    })
+    .catch(error => {
+      console.error('Erro ao consultar CNPJ:', error);
+      // alert('Erro ao consultar CNPJ.');
+    });
+}
 </script>

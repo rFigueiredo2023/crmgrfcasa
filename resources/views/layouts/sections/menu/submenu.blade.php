@@ -29,10 +29,22 @@ use Illuminate\Support\Facades\Route;
           }
         }
       }
+
+      // Gerar o URL correto para o item de menu
+      $menuUrl = 'javascript:void(0)';
+
+      // Se tiver slug e a rota existir, use a função route()
+      if (isset($submenu->slug) && Route::has($submenu->slug)) {
+          $menuUrl = route($submenu->slug);
+      }
+      // Caso contrário, se tiver URL, use-a
+      elseif (isset($submenu->url) && $submenu->url !== null) {
+          $menuUrl = url($submenu->url);
+      }
     @endphp
 
       <li class="menu-item {{$activeClass}}">
-        <a href="{{ isset($submenu->url) ? url($submenu->url) : 'javascript:void(0)' }}" class="{{ isset($submenu->submenu) ? 'menu-link menu-toggle' : 'menu-link' }}" @if (isset($submenu->target) and !empty($submenu->target)) target="_blank" @endif>
+        <a href="{{ $menuUrl }}" class="{{ isset($submenu->submenu) ? 'menu-link menu-toggle' : 'menu-link' }}" @if (isset($submenu->target) and !empty($submenu->target)) target="_blank" @endif>
           @if (isset($submenu->icon))
           <i class="{{ $submenu->icon }}"></i>
           @endif

@@ -63,6 +63,10 @@
                         <i class='bx bx-car me-1'></i> Veículos
                     </button>
                 </li>
+                @if(auth()->user()->isAdmin())
+                <!-- Removido a pílula "Segmentos" -->
+                <!-- Removido a pílula "Admin" -->
+                @endif
             </ul>
 
             <!-- Tab panes -->
@@ -76,6 +80,9 @@
                 <div class="tab-pane fade" id="tab-veiculos" role="tabpanel">
                     @include('components.tabela-veiculos')
                 </div>
+                @if(auth()->user()->isAdmin())
+                <!-- Removido o painel de segmentos -->
+                @endif
             </div>
         </div>
     </div>
@@ -108,6 +115,92 @@
                     value = value.replace(/(\d{2})(\d)/, '($1) $2');
                     value = value.replace(/(\d{5})(\d)/, '$1-$2');
                     e.target.value = value;
+                }
+            });
+        }
+
+        // Máscara para telefone2 no formulário de adição
+        const telefone2Input = document.getElementById('add_telefone2');
+        if (telefone2Input) {
+            telefone2Input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                    e.target.value = value;
+                }
+            });
+        }
+
+        // Máscara para telefone2 no formulário de edição
+        const editTelefone2Input = document.getElementById('edit_telefone2');
+        if (editTelefone2Input) {
+            editTelefone2Input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                    e.target.value = value;
+                }
+            });
+        }
+
+        // Máscara para CEP no formulário de adição
+        const cepInput = document.getElementById('add_cep');
+        if (cepInput) {
+            cepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 8) {
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                    e.target.value = value;
+                }
+            });
+
+            // Buscar endereço ao preencher CEP (Adição)
+            cepInput.addEventListener('blur', function() {
+                const cep = this.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.erro) {
+                                document.getElementById('add_endereco').value = data.logradouro || '';
+                                document.getElementById('add_municipio').value = data.localidade || '';
+                                document.getElementById('add_uf').value = data.uf || '';
+                                document.getElementById('add_codigo_ibge').value = data.ibge || '';
+                            }
+                        })
+                        .catch(error => console.error('Erro ao buscar CEP:', error));
+                }
+            });
+        }
+
+        // Máscara para CEP no formulário de edição
+        const editCepInput = document.getElementById('edit_cep');
+        if (editCepInput) {
+            editCepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 8) {
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                    e.target.value = value;
+                }
+            });
+
+            // Buscar endereço ao preencher CEP (Edição)
+            editCepInput.addEventListener('blur', function() {
+                const cep = this.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.erro) {
+                                document.getElementById('edit_endereco').value = data.logradouro || '';
+                                document.getElementById('edit_municipio').value = data.localidade || '';
+                                document.getElementById('edit_uf').value = data.uf || '';
+                                document.getElementById('edit_codigo_ibge').value = data.ibge || '';
+                            }
+                        })
+                        .catch(error => console.error('Erro ao buscar CEP:', error));
                 }
             });
         }
@@ -156,6 +249,101 @@
                     });
             });
         }
+
+        // Função genérica para carregar dados em um modal
+        function setupModalEdit(modalId, route) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-id');
+                    const form = this.querySelector('form');
+
+                    form.action = route.replace('__id__', id);
+
+                    fetch(`${route.replace('__id__', id)}/edit`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Erro na resposta da rede');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data) throw new Error('Dados não encontrados');
+
+                            // Preenche todos os campos do formulário
+                            Object.keys(data).forEach(key => {
+                                const input = form.querySelector(`[name="${key}"]`);
+                                if (input) input.value = data[key] || '';
+                            });
+
+                            // Campos adicionais específicos
+                            if (modalId === 'modalEditCliente') {
+                                document.getElementById('edit_telefone2').value = data.telefone2 || '';
+                                document.getElementById('edit_site').value = data.site || '';
+                                document.getElementById('edit_segmento_id').value = data.segmento_id || '';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao carregar dados:', error);
+                            alert('Erro ao carregar dados');
+                        });
+                });
+            }
+        }
+
+        // Inicializa os modais
+        setupModalEdit('modalEditCliente', '/customers/clientes/__id__');
+        setupModalEdit('modalEditTransportadora', '/customers/transportadoras/__id__');
+        setupModalEdit('modalEditVeiculo', '/customers/veiculos/__id__');
+
+        // Código para o modal de adicionar segmento
+        const formAddSegmento = document.querySelector('#modalAddSegmento form');
+        if (formAddSegmento) {
+            formAddSegmento.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Fechar modal
+                        bootstrap.Modal.getInstance(document.getElementById('modalAddSegmento')).hide();
+
+                        // Mostrar mensagem de sucesso
+                        Swal.fire({
+                            title: 'Sucesso!',
+                            text: 'Segmento criado com sucesso!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Recarregar a página para mostrar o novo segmento
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Erro!',
+                            text: data.message || 'Erro ao criar segmento.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    Swal.fire({
+                        title: 'Erro!',
+                        text: 'Ocorreu um erro ao processar sua solicitação.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+        }
     });
 </script>
 @endsection
@@ -188,24 +376,53 @@
                             <input type="text" class="form-control" id="add_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="add_email">Email</label>
+                            <input type="email" class="form-control" id="add_email" name="email">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="add_cep">CEP</label>
+                            <input type="text" class="form-control" id="add_cep" name="cep">
+                        </div>
+                        <div class="col-md-9">
                             <label class="form-label" for="add_endereco">Endereço</label>
                             <input type="text" class="form-control" id="add_endereco" name="endereco" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label" for="add_codigo_ibge">Código IBGE</label>
                             <input type="text" class="form-control" id="add_codigo_ibge" name="codigo_ibge" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="add_municipio">Município</label>
+                            <input type="text" class="form-control" id="add_municipio" name="municipio" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="add_uf">UF</label>
+                            <input type="text" class="form-control" id="add_uf" name="uf" maxlength="2" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="add_telefone">Telefone</label>
                             <input type="text" class="form-control" id="add_telefone" name="telefone" required>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label class="form-label" for="add_telefone2">Telefone 2</label>
+                            <input type="text" class="form-control" id="add_telefone2" name="telefone2">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="add_contato">Contato</label>
                             <input type="text" class="form-control" id="add_contato" name="contato" required>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="add_site">Site</label>
+                            <input type="url" class="form-control" id="add_site" name="site" placeholder="https://">
+                        </div>
                         <div class="col-md-12">
-                            <label class="form-label" for="add_segmento">Segmento</label>
-                            <input type="text" class="form-control" id="add_segmento" name="segmento">
+                            <label class="form-label" for="add_segmento_id">Segmento</label>
+                            <select class="form-select" id="add_segmento_id" name="segmento_id">
+                                <option value="">Selecione um segmento...</option>
+                                @foreach(App\Models\Segmento::orderBy('nome')->get() as $segmento)
+                                    <option value="{{ $segmento->id }}">{{ $segmento->nome }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary me-sm-3 me-1">Salvar</button>
@@ -244,24 +461,53 @@
                             <input type="text" class="form-control" id="edit_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="edit_email">Email</label>
+                            <input type="email" class="form-control" id="edit_email" name="email">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="edit_cep">CEP</label>
+                            <input type="text" class="form-control" id="edit_cep" name="cep">
+                        </div>
+                        <div class="col-md-9">
                             <label class="form-label" for="edit_endereco">Endereço</label>
                             <input type="text" class="form-control" id="edit_endereco" name="endereco" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label" for="edit_codigo_ibge">Código IBGE</label>
                             <input type="text" class="form-control" id="edit_codigo_ibge" name="codigo_ibge" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit_municipio">Município</label>
+                            <input type="text" class="form-control" id="edit_municipio" name="municipio" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit_uf">UF</label>
+                            <input type="text" class="form-control" id="edit_uf" name="uf" maxlength="2" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="edit_telefone">Telefone</label>
                             <input type="text" class="form-control" id="edit_telefone" name="telefone" required>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit_telefone2">Telefone 2</label>
+                            <input type="text" class="form-control" id="edit_telefone2" name="telefone2">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="edit_contato">Contato</label>
                             <input type="text" class="form-control" id="edit_contato" name="contato" required>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit_site">Site</label>
+                            <input type="url" class="form-control" id="edit_site" name="site" placeholder="https://">
+                        </div>
                         <div class="col-md-12">
-                            <label class="form-label" for="edit_segmento">Segmento</label>
-                            <input type="text" class="form-control" id="edit_segmento" name="segmento">
+                            <label class="form-label" for="edit_segmento_id">Segmento</label>
+                            <select class="form-select" id="edit_segmento_id" name="segmento_id">
+                                <option value="">Selecione um segmento...</option>
+                                @foreach(App\Models\Segmento::orderBy('nome')->get() as $segmento)
+                                    <option value="{{ $segmento->id }}">{{ $segmento->nome }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary me-sm-3 me-1">Atualizar</button>
@@ -395,6 +641,31 @@
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Segmento -->
+    <div class="modal fade" id="modalAddSegmento" tabindex="-1" aria-labelledby="modalAddSegmentoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ route('segmentos.store') }}">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAddSegmentoLabel">Adicionar Segmento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome do Segmento</label>
+                            <input type="text" class="form-control" name="nome" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 

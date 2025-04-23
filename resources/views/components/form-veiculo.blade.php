@@ -129,7 +129,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="tipo_proprietario">Tipo de Proprietário</label>
-                        <select class="form-select" id="tipo_proprietario" name="tipo_proprietario" required>
+                        <select class="form-select" id="tipo_proprietario" name="tipo_propriedade" required>
                             <option value="">Selecione...</option>
                             <option value="agregado">Agregado</option>
                             <option value="independente">Independente</option>
@@ -141,6 +141,15 @@
                     <div class="col-md-6">
                         <label class="form-label" for="detalhes">Detalhes</label>
                         <textarea class="form-control" id="detalhes" name="detalhes" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="transportadora_id">Transportadora</label>
+                        <select class="form-select" id="transportadora_id" name="transportadora_id">
+                            <option value="">Selecione uma transportadora...</option>
+                            @foreach(\App\Models\Transportadora::orderBy('razao_social')->get() as $transportadora)
+                                <option value="{{ $transportadora->id }}">{{ $transportadora->razao_social }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-12 text-center">
                         <button type="submit" class="btn btn-primary me-sm-3 me-1">Salvar</button>
