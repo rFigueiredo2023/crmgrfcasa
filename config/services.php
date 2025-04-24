@@ -43,4 +43,9 @@ return [
     'model' => env('OPENAI_MODEL', 'gpt-4'),
   ],
 
+  'cnpja' => [
+    'token' => env('CNPJA_TOKEN'),
+    'base_url' => env('CNPJA_BASE_URL', 'https://api.cnpja.com'),
+  ],
+
 ];

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ClienteController extends Controller
 {
@@ -34,7 +35,9 @@ class ClienteController extends Controller
             'municipio' => 'required|string|max:100',
             'uf' => 'required|string|max:2',
             'segmento' => 'nullable|string|max:100',
-            'segmento_id' => 'nullable|exists:segmentos,id'
+            'segmento_id' => 'nullable|exists:segmentos,id',
+            'atividade_principal' => 'nullable|string|max:255',
+            'atividades_secundarias' => 'nullable|string'
         ]);
 
         $cliente = Cliente::create([
@@ -53,6 +56,8 @@ class ClienteController extends Controller
             'uf' => $request->uf,
             'segmento' => $request->segmento,
             'segmento_id' => $request->segmento_id,
+            'atividade_principal' => $request->atividade_principal,
+            'atividades_secundarias' => $request->atividades_secundarias,
             'user_id' => auth()->id() // Registra o usuário que está cadastrando
         ]);
 
@@ -104,9 +109,32 @@ class ClienteController extends Controller
     public function edit(Cliente $cliente)
     {
         try {
-            return response()->json($cliente);
+            // Carrega as relações necessárias
+            $cliente->load(['historicos', 'inscricoesEstaduais', 'vendedor']);
+
+            // Garante que todos os campos são retornados
+            $clienteData = $cliente->toArray();
+
+            // Adiciona campos adicionais se necessário
+            $clienteData['atendimentos_count'] = $cliente->atendimentos()->count();
+            $clienteData['historicos_count'] = $cliente->historicos()->count();
+
+            // Formata as datas para exibição se necessário
+            if (isset($clienteData['created_at'])) {
+                $clienteData['created_at_formatted'] = date('d/m/Y H:i', strtotime($clienteData['created_at']));
+            }
+
+            if (isset($clienteData['updated_at'])) {
+                $clienteData['updated_at_formatted'] = date('d/m/Y H:i', strtotime($clienteData['updated_at']));
+            }
+
+            return response()->json($clienteData);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao carregar dados do cliente'], 500);
+            Log::error('Erro ao carregar dados do cliente: ' . $e->getMessage(), [
+                'cliente_id' => $cliente->id,
+                'exception' => $e
+            ]);
+            return response()->json(['error' => 'Erro ao carregar dados do cliente: ' . $e->getMessage()], 500);
         }
     }
 
@@ -127,7 +155,9 @@ class ClienteController extends Controller
             'municipio' => 'required|string|max:100',
             'uf' => 'required|string|max:2',
             'segmento' => 'nullable|string|max:100',
-            'segmento_id' => 'nullable|exists:segmentos,id'
+            'segmento_id' => 'nullable|exists:segmentos,id',
+            'atividade_principal' => 'nullable|string|max:255',
+            'atividades_secundarias' => 'nullable|string'
         ]);
 
         $cliente->update([
@@ -145,7 +175,9 @@ class ClienteController extends Controller
             'municipio' => $request->municipio,
             'uf' => $request->uf,
             'segmento' => $request->segmento,
-            'segmento_id' => $request->segmento_id
+            'segmento_id' => $request->segmento_id,
+            'atividade_principal' => $request->atividade_principal,
+            'atividades_secundarias' => $request->atividades_secundarias
         ]);
 
         return redirect()->back()->with('success', 'Cliente atualizado com sucesso!');
@@ -183,7 +215,7 @@ class ClienteController extends Controller
             ]);
         } catch (\Exception $e) {
             // Se ocorrer um erro (talvez porque o ID é de um lead, não de um cliente)
-            \Log::error('Erro ao carregar histórico: ' . $e->getMessage());
+            Log::error('Erro ao carregar histórico: ' . $e->getMessage());
 
             // Envie uma resposta com array vazio para não quebrar o frontend
             return response()->json([
@@ -287,7 +319,7 @@ class ClienteController extends Controller
 
             return response()->json($atendimentos);
         } catch (\Exception $e) {
-            \Log::error('Erro ao buscar atendimentos: ' . $e->getMessage());
+            Log::error('Erro ao buscar atendimentos: ' . $e->getMessage());
             return response()->json([]);
         }
     }
@@ -308,31 +340,139 @@ class ClienteController extends Controller
     }
 
     /**
-     * Busca dados de um CNPJ na API ReceitaWS
-     * Serve como proxy para evitar problemas de CORS
+     * Método para consultar um CNPJ na API CNPJa
      */
-    public function consultarCnpj(Request $request, $cnpj)
+    public function consultarCnpj(Request $request)
     {
         try {
-            // Remove caracteres não numéricos
-            $cnpj = preg_replace('/\D/', '', $cnpj);
+            // Obtém o CNPJ da requisição e remove caracteres não numéricos
+            $cnpj = preg_replace('/\D/', '', $request->cnpj);
 
             // Verifica se o CNPJ tem 14 dígitos
             if (strlen($cnpj) !== 14) {
                 return response()->json([
-                    'status' => 'ERROR',
-                    'message' => 'CNPJ inválido'
+                    'success' => false,
+                    'message' => 'CNPJ inválido. Deve conter 14 dígitos.'
                 ], 400);
             }
 
-            // Faz a requisição para a API ReceitaWS
-            $response = Http::get("https://www.receitaws.com.br/v1/cnpj/{$cnpj}");
+            Log::info('Controller: Iniciando consulta CNPJa', ['cnpj' => $cnpj]);
 
-            // Retorna a resposta da API
-            return $response->json();
+            try {
+                // Token de autenticação da API CNPJa
+                $apiToken = trim(config('services.cnpja.token'));
+                $baseUrl = trim(config('services.cnpja.base_url', 'https://api.cnpja.com'));
+
+                Log::info('Controller: Configuração CNPJa', [
+                    'token_length' => strlen($apiToken),
+                    'token_first_chars' => substr($apiToken, 0, 5) . '...',
+                    'base_url' => $baseUrl
+                ]);
+
+                // Tentativa de fazer a requisição para a API CNPJa
+                $url = "{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true";
+                Log::info('Controller: Enviando requisição para CNPJa', ['url' => $url]);
+
+                $response = Http::withHeaders([
+                    'Authorization' => $apiToken
+                ])->get($url);
+
+                // Log da resposta HTTP (status e headers)
+                Log::info('Controller: Resposta HTTP da API CNPJa', [
+                    'status' => $response->status(),
+                    'headers' => $response->headers(),
+                    'successful' => $response->successful(),
+                    'failed' => $response->failed()
+                ]);
+
+                // Se a resposta contiver erro, registre o corpo da resposta
+                if (!$response->successful()) {
+                    Log::error('Controller: Erro na resposta CNPJa', [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                        'json' => $response->json()
+                    ]);
+
+                    // Log específico do corpo da resposta para melhor diagnóstico
+                    Log::error('Controller: Corpo detalhado da resposta de erro CNPJa', [
+                        'raw_body' => $response->body(),
+                        'response_object' => json_encode($response)
+                    ]);
+
+                    // Mensagem personalizada para erro de autenticação
+                    if ($response->status() === 401) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Erro de autenticação na API CNPJa. O token de acesso pode estar inválido ou expirado. Por favor, verifique as configurações da API e renove o token se necessário.',
+                            'error_code' => 'token_invalid',
+                            'api_response' => $response->json()
+                        ], 500);
+                    }
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Erro ao consultar CNPJ: HTTP ' . $response->status() .
+                                    ' - ' . ($response->json()['message'] ?? $response->body())
+                    ], $response->status());
+                }
+
+                // Log de sucesso com informações básicas da resposta
+                $data = $response->json();
+                Log::info('Controller: Consulta CNPJa bem-sucedida', [
+                    'razao_social' => $data['company']['name'] ?? 'N/A',
+                    'situacao' => $data['status']['text'] ?? 'N/A'
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $data
+                ]);
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                Log::error('Controller: Erro de conexão com a API CNPJa', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de conexão com a API CNPJa: ' . $e->getMessage()
+                ], 500);
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                Log::error('Controller: Erro na requisição para API CNPJa', [
+                    'message' => $e->getMessage(),
+                    'response' => $e->response ? $e->response->body() : 'Sem resposta',
+                    'status' => $e->response ? $e->response->status() : 'Sem status',
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro na requisição para API CNPJa: ' . $e->getMessage()
+                ], 500);
+            } catch (\Exception $e) {
+                // Captura exceções específicas dentro do contexto de conexão com a API
+                Log::error('Controller: Exceção durante comunicação com a API CNPJa', [
+                    'message' => $e->getMessage(),
+                    'class' => get_class($e),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Exceção durante comunicação com a API CNPJa: ' . $e->getMessage()
+                ], 500);
+            }
         } catch (\Exception $e) {
+            Log::error('Controller: Erro inesperado na consulta CNPJa', [
+                'message' => $e->getMessage(),
+                'class' => get_class($e),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
-                'status' => 'ERROR',
+                'success' => false,
                 'message' => 'Erro ao consultar CNPJ: ' . $e->getMessage()
             ], 500);
         }

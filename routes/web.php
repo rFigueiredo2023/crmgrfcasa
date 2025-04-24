@@ -24,6 +24,7 @@ use App\Http\Controllers\LeadAtendimentoController;
 use App\Http\Controllers\LeadAtendimentoFakeController;
 use App\Http\Controllers\LeadHistoricoController;
 use App\Http\Controllers\AssistenteController;
+use Illuminate\Support\Facades\Http;
 
 // Rotas públicas
 Route::middleware('web')->group(function () {
@@ -88,6 +89,7 @@ Route::middleware('web')->group(function () {
                 ->name('clientes.atendimentos');
             // Nova rota para o proxy de consulta de CNPJ
             Route::get('/api/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('api.consultar-cnpj');
+            Route::get('/customers/api/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('customers.api.consultar-cnpj');
 
             // Transportadoras
             Route::post('/transportadoras', [TransportadoraController::class, 'store'])->name('transportadoras.store');
@@ -170,12 +172,59 @@ Route::middleware('web')->group(function () {
         // Rotas para o assistente de desenvolvimento
         Route::get('/dev-assistente', [AssistenteController::class, 'index'])->name('dev-assistente');
         Route::post('/dev-assistente', [AssistenteController::class, 'perguntar'])->name('dev-assistente.perguntar');
+
+        // Rota de teste para API CNPJa (Apenas em desenvolvimento)
+        Route::get('/teste-cnpja/{cnpj}', function($cnpj) {
+            if (!app()->environment('local')) {
+                abort(404);
+            }
+
+            $cnpj = preg_replace('/\D/', '', $cnpj);
+
+            if (strlen($cnpj) !== 14) {
+                return response()->json(['error' => 'CNPJ inválido'], 400);
+            }
+
+            // Garante que o token não tem espaços extras
+            $apiToken = trim(config('services.cnpja.token'));
+            $baseUrl = config('services.cnpja.base_url', 'https://api.cnpja.com');
+
+            // Log do token para debug
+            \Log::info('Token CNPJa usado na chamada de teste:', [
+                'token' => $apiToken,
+                'token_length' => strlen($apiToken)
+            ]);
+
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => $apiToken
+                ])->get("{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true");
+
+                return response()->json([
+                    'status' => $response->status(),
+                    'headers' => $response->headers(),
+                    'body' => $response->json(),
+                    'token_used' => $apiToken,
+                    'token_length' => strlen($apiToken),
+                    'url' => "{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true"
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'error' => $e->getMessage(),
+                    'token_used' => $apiToken,
+                    'url' => "{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true"
+                ], 500);
+            }
+        })->middleware('auth');
     });
 });
 
 // Locale
 Route::get('/lang/{locale}', [LanguageController::class, 'swap']);
 Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');
+
+// Rota global para consulta de CNPJ (pode ser acessada de qualquer lugar)
+Route::get('/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('global.consultar-cnpj');
 
 // Nova rota para o controlador especializado de históricos de leads
 Route::get('/lead-historico/{id}', [LeadHistoricoController::class, 'index'])->name('lead.historico.index');

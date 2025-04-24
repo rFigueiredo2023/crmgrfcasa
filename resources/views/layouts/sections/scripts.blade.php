@@ -73,4 +73,11 @@
   });
 </script>
 
+<!-- Scripts de libs, vendors etc -->
+
+<!-- Scripts de consulta CNPJ -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('assets/js/cnpj-consulta.js') }}"></script>
+<script src="{{ asset('assets/js/cnpj-diagnose.js') }}"></script>
+
 @yield('script')

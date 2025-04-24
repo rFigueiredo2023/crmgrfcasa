@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cliente extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'razao_social',
@@ -17,15 +18,52 @@ class Cliente extends Model
         'codigo_ibge',
         'telefone',
         'telefone2',
+        'site',
         'contato',
         'email',
-        'site',
         'cep',
         'municipio',
         'uf',
         'segmento',
         'segmento_id',
-        'user_id'
+        'user_id',
+        'atividade_principal',
+        'atividades_secundarias',
+        // Novos campos CNPJa
+        'nome_fantasia',
+        'fundacao',
+        'situacao',
+        'data_situacao',
+        'natureza_juridica',
+        'porte',
+        'capital_social',
+        'simples_nacional',
+        'logradouro',
+        'numero',
+        'bairro',
+        'cidade',
+        'estado',
+        'complemento',
+        'dominio_email',
+        'cnae_principal',
+        'cnaes_secundarios',
+        'socio_principal',
+        'funcao_socio',
+        'idade_socio',
+        'lista_socios',
+        'suframa',
+        'status_suframa',
+        'tipo_contribuinte',
+        'regime_tributario'
+    ];
+
+    protected $casts = [
+        'fundacao' => 'date',
+        'data_situacao' => 'date',
+        'capital_social' => 'decimal:2',
+        'simples_nacional' => 'boolean',
+        'cnaes_secundarios' => 'array',
+        'lista_socios' => 'array',
     ];
 
     public function vendedor()
@@ -67,5 +105,11 @@ class Cliente extends Model
     public function segmento()
     {
         return $this->belongsTo(Segmento::class);
+    }
+
+    // Relacionamento com Inscrições Estaduais
+    public function inscricoesEstaduais()
+    {
+        return $this->hasMany(InscricaoEstadual::class);
     }
 }

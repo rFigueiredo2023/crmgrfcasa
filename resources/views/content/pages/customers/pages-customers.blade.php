@@ -89,6 +89,7 @@
 @endsection
 
 @section('page-script')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Máscara para CNPJ no formulário de adição
@@ -250,6 +251,282 @@
             });
         }
 
+        // Função para exibir atividades secundárias
+        function exibirAtividadesSecundarias(atividades, containerId, inputId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            // Atualizar o campo oculto com o JSON das atividades
+            if (inputId) {
+                document.getElementById(inputId).value = JSON.stringify(atividades);
+            }
+
+            if (!atividades || atividades.length === 0) {
+                container.innerHTML = '<p class="text-muted mb-0 small">Nenhuma atividade secundária registrada.</p>';
+                return;
+            }
+
+            const lista = document.createElement('ul');
+            lista.className = 'list-unstyled mb-0 small';
+
+            atividades.forEach(atividade => {
+                const item = document.createElement('li');
+                item.className = 'mb-1';
+                item.textContent = atividade.text || atividade;
+                lista.appendChild(item);
+            });
+
+            container.appendChild(lista);
+        }
+
+        // Função para buscar CNPJ e preencher dados
+        window.buscarCNPJSimples = function(cnpj) {
+            // Remove caracteres não numéricos
+            cnpj = cnpj.replace(/\D/g, '');
+
+            if (cnpj.length !== 14) {
+                Swal.fire({
+                    title: 'CNPJ Inválido',
+                    text: 'O CNPJ deve conter 14 dígitos numéricos.',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // Feedback visual de carregamento
+            const loadingAlert = Swal.fire({
+                title: 'Consultando CNPJ',
+                text: 'Aguarde enquanto consultamos os dados...',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // URL do proxy Laravel
+            const apiUrl = `/consultar-cnpj/${cnpj}`;
+
+            // Requisição com fetch
+            fetch(apiUrl)
+                .then(response => {
+                    // Primeiro obtém o texto da resposta para verificação
+                    return response.text().then(text => {
+                        if (!response.ok) {
+                            throw new Error(`Erro ${response.status}: ${text}`);
+                        }
+
+                        // Verificar se o texto é um JSON válido antes de parsear
+                        if (!text || text.trim() === '') {
+                            throw new Error('Resposta vazia recebida da API');
+                        }
+
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('Resposta inválida recebida da API');
+                        }
+                    });
+                })
+                .then(data => {
+                    // Fechar o diálogo de carregamento
+                    loadingAlert.close();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'Erro na consulta do CNPJ');
+                    }
+
+                    try {
+                        // Identificar qual modal está ativo (adicionar ou editar)
+                        const isAddModal = document.getElementById('modalAddCliente').classList.contains('show');
+                        const prefix = isAddModal ? 'add_' : 'edit_';
+
+                        // Preencher campos do formulário ativo
+                        const formId = isAddModal ? 'formAddCliente' : 'formEditCliente';
+                        const form = document.getElementById(formId);
+
+                        if (!form) {
+                            throw new Error('Formulário não encontrado');
+                        }
+
+                        // Log para depuração
+                        console.log('Modal ativo:', isAddModal ? 'Adicionar Cliente' : 'Editar Cliente');
+                        console.log('Campo IE ID:', `#${prefix}ie`);
+                        console.log('Elemento IE existe:', !!form.querySelector(`#${prefix}ie`));
+
+                        // Função segura para preencher campos, verificando se eles existem
+                        const preencherCampo = (seletor, valor, fallback = '') => {
+                            const elemento = form.querySelector(seletor);
+                            if (elemento) {
+                                elemento.value = valor || fallback;
+                            } else {
+                                console.warn(`Elemento não encontrado: ${seletor}`);
+                            }
+                        };
+
+                        // Preencher os campos básicos
+                        if (data.data.company) {
+                            preencherCampo(`#${prefix}razao_social`, data.data.company.name);
+
+                            // Preencher porte da empresa se disponível
+                            if (data.data.company.size && data.data.company.size.acronym) {
+                                const porteSelect = form.querySelector(`#${prefix}porte_empresa`);
+                                if (porteSelect) {
+                                    porteSelect.value = data.data.company.size.acronym;
+                                }
+                            }
+                        }
+
+                        // Tentar preencher inscrição estadual (várias fontes possíveis)
+                        // Método 1: Campo registrations
+                        if (data.data.registrations && data.data.registrations.length > 0) {
+                            console.log('Registrations encontradas:', data.data.registrations);
+                            // Procurar a inscrição estadual do estado atual ou qualquer uma disponível
+                            const estadoUF = (document.querySelector(`#${prefix}uf`) || {value: ''}).value;
+                            console.log('Estado atual:', estadoUF);
+
+                            // Primeiro tentar encontrar a IE do estado atual
+                            let inscricaoEstadual = data.data.registrations.find(reg => reg.state === estadoUF);
+
+                            // Se não encontrar para o estado atual, usar qualquer uma disponível
+                            if (!inscricaoEstadual && data.data.registrations.length > 0) {
+                                inscricaoEstadual = data.data.registrations[0];
+                                console.log('Usando primeira inscrição disponível:', inscricaoEstadual);
+                            }
+
+                            if (inscricaoEstadual) {
+                                preencherCampo(`#${prefix}ie`, inscricaoEstadual.number);
+                                console.log('IE encontrada:', inscricaoEstadual.number, 'Estado:', inscricaoEstadual.state);
+                            } else {
+                                console.log('Nenhuma inscrição estadual encontrada nos registros');
+                            }
+                        }
+                        // Método 2: Verificar se há um campo específico na resposta
+                        else if (data.data.stateRegistration) {
+                            preencherCampo(`#${prefix}ie`, data.data.stateRegistration);
+                            console.log('IE encontrada em stateRegistration:', data.data.stateRegistration);
+                        }
+                        // Método 3: Consultar diretamente da Receita Federal ou API secundária
+                        else {
+                            console.log('Tentando obter IE de fonte secundária...');
+                            // Consultar a inscrição estadual por uma API secundária usando o CNPJ
+                            const cnpjSemPontuacao = (data.data.taxId || '').replace(/\D/g, '');
+                            if (cnpjSemPontuacao) {
+                                const url = `/api/consultar-ie/${cnpjSemPontuacao}`;
+                                console.log(`Consultando IE via: ${url}`);
+
+                                // Opcionalmente fazer uma nova consulta para obter a IE
+                                // Este é um exemplo - a implementação real depende da existência dessa API
+                                /*
+                                fetch(url)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success && data.inscricaoEstadual) {
+                                            preencherCampo(`#${prefix}ie`, data.inscricaoEstadual);
+                                        }
+                                    })
+                                    .catch(error => console.error('Erro ao consultar IE:', error));
+                                */
+                            }
+
+                            // Exibir os dados completos da API no console para debugging
+                            console.log('Dados completos da API:', data.data);
+                        }
+
+                        // Preencher telefone se disponível
+                        if (data.data.phones && data.data.phones.length > 0) {
+                            const phone = data.data.phones[0];
+                            const formattedPhone = `(${phone.area}) ${phone.number}`;
+                            preencherCampo(`#${prefix}telefone`, formattedPhone);
+
+                            // Se houver um segundo telefone
+                            if (data.data.phones.length > 1) {
+                                const phone2 = data.data.phones[1];
+                                const formattedPhone2 = `(${phone2.area}) ${phone2.number}`;
+                                preencherCampo(`#${prefix}telefone2`, formattedPhone2);
+                            }
+                        }
+
+                        if (data.data.address) {
+                            const endereco = data.data.address;
+                            preencherCampo(`#${prefix}endereco`, `${endereco.street || ''}, ${endereco.number || ''}`);
+                            preencherCampo(`#${prefix}municipio`, endereco.city);
+                            preencherCampo(`#${prefix}uf`, endereco.state);
+                            preencherCampo(`#${prefix}cep`, endereco.zip);
+                            preencherCampo(`#${prefix}codigo_ibge`, endereco.municipality);
+                        }
+
+                        // Preencher atividade principal
+                        if (data.data.mainActivity) {
+                            preencherCampo(`#${prefix}atividade_principal`, data.data.mainActivity.text);
+                        }
+
+                        // Preencher atividades secundárias
+                        if (data.data.sideActivities) {
+                            const containerId = `${prefix}atividades_secundarias`;
+                            const inputId = `${prefix}atividades_secundarias_json`;
+
+                            // Verificar se os elementos existem antes de chamar a função
+                            const container = document.getElementById(containerId);
+                            const inputElement = document.getElementById(inputId);
+
+                            if (container) {
+                                // Limpar container
+                                container.innerHTML = '';
+
+                                // Atualizar campo oculto se existir
+                                if (inputElement) {
+                                    inputElement.value = JSON.stringify(data.data.sideActivities);
+                                }
+
+                                // Exibir atividades
+                                if (!data.data.sideActivities || data.data.sideActivities.length === 0) {
+                                    container.innerHTML = '<p class="text-muted mb-0 small">Nenhuma atividade secundária registrada.</p>';
+                                } else {
+                                    const lista = document.createElement('ul');
+                                    lista.className = 'list-unstyled mb-0 small';
+
+                                    data.data.sideActivities.forEach(atividade => {
+                                        const item = document.createElement('li');
+                                        item.className = 'mb-1';
+                                        item.textContent = atividade.text || atividade;
+                                        lista.appendChild(item);
+                                    });
+
+                                    container.appendChild(lista);
+                                }
+                            } else {
+                                console.warn(`Container de atividades secundárias não encontrado: ${containerId}`);
+                            }
+                        }
+
+                        // Mostrar mensagem de sucesso
+                        Swal.fire({
+                            title: 'Sucesso!',
+                            text: 'Dados do CNPJ carregados com sucesso',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } catch (error) {
+                        console.error('Erro ao processar dados:', error);
+                        throw new Error('Erro ao processar os dados do CNPJ: ' + error.message);
+                    }
+                })
+                .catch(error => {
+                    // Fechar o diálogo de carregamento e mostrar o erro
+                    loadingAlert.close();
+
+                    Swal.fire({
+                        title: 'Erro na Consulta',
+                        text: error.message || 'Não foi possível consultar o CNPJ.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+        };
+
         // Função genérica para carregar dados em um modal
         function setupModalEdit(modalId, route) {
             const modal = document.getElementById(modalId);
@@ -274,13 +551,6 @@
                                 const input = form.querySelector(`[name="${key}"]`);
                                 if (input) input.value = data[key] || '';
                             });
-
-                            // Campos adicionais específicos
-                            if (modalId === 'modalEditCliente') {
-                                document.getElementById('edit_telefone2').value = data.telefone2 || '';
-                                document.getElementById('edit_site').value = data.site || '';
-                                document.getElementById('edit_segmento_id').value = data.segmento_id || '';
-                            }
                         })
                         .catch(error => {
                             console.error('Erro ao carregar dados:', error);
@@ -291,9 +561,92 @@
         }
 
         // Inicializa os modais
-        setupModalEdit('modalEditCliente', '/customers/clientes/__id__');
         setupModalEdit('modalEditTransportadora', '/customers/transportadoras/__id__');
         setupModalEdit('modalEditVeiculo', '/customers/veiculos/__id__');
+
+        // Inicialização específica para o modal de edição de cliente
+        const modalEditCliente = document.getElementById('modalEditCliente');
+        if (modalEditCliente) {
+            modalEditCliente.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const clienteId = button.getAttribute('data-id');
+                const form = this.querySelector('#formEditCliente');
+
+                if (!clienteId) {
+                    console.error('ID do cliente não encontrado');
+                    return;
+                }
+
+                // Atualiza a action do formulário
+                form.action = `/customers/clientes/${clienteId}`;
+
+                // Busca os dados do cliente via AJAX
+                fetch(`/customers/clientes/${clienteId}/edit`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro na resposta da rede: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos:', data);
+                        if (!data) {
+                            throw new Error('Dados do cliente não encontrados');
+                        }
+
+                        // Preenche todos os campos do formulário
+                        form.querySelector('#edit_razao_social').value = data.razao_social || '';
+                        form.querySelector('#edit_cnpj').value = data.cnpj || '';
+                        form.querySelector('#edit_ie').value = data.inscricao_estadual || '';
+                        form.querySelector('#edit_email').value = data.email || '';
+                        form.querySelector('#edit_cep').value = data.cep || '';
+                        form.querySelector('#edit_endereco').value = data.endereco || '';
+                        form.querySelector('#edit_codigo_ibge').value = data.codigo_ibge || '';
+                        form.querySelector('#edit_municipio').value = data.municipio || '';
+                        form.querySelector('#edit_uf').value = data.uf || '';
+                        form.querySelector('#edit_telefone').value = data.telefone || '';
+                        form.querySelector('#edit_telefone2').value = data.telefone2 || '';
+                        form.querySelector('#edit_contato').value = data.contato || '';
+                        form.querySelector('#edit_site').value = data.site || '';
+
+                        // Atividade principal
+                        if (form.querySelector('#edit_atividade_principal')) {
+                            form.querySelector('#edit_atividade_principal').value = data.atividade_principal || '';
+                        }
+
+                        // Segmento (select)
+                        if (data.segmento_id && form.querySelector('#edit_segmento_id')) {
+                            form.querySelector('#edit_segmento_id').value = data.segmento_id;
+                        }
+
+                        // Atividades secundárias (JSON)
+                        if (data.atividades_secundarias && form.querySelector('#edit_atividades_secundarias_json')) {
+                            form.querySelector('#edit_atividades_secundarias_json').value = data.atividades_secundarias;
+
+                            // Se tiver a função para exibir as atividades, use-a
+                            if (typeof exibirAtividadesSecundarias === 'function') {
+                                try {
+                                    const atividades = typeof data.atividades_secundarias === 'string'
+                                        ? JSON.parse(data.atividades_secundarias)
+                                        : data.atividades_secundarias;
+
+                                    exibirAtividadesSecundarias(
+                                        atividades,
+                                        'edit_atividades_secundarias',
+                                        'edit_atividades_secundarias_json'
+                                    );
+                                } catch (e) {
+                                    console.error('Erro ao processar atividades secundárias:', e);
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar dados do cliente:', error);
+                        alert('Erro ao carregar dados do cliente: ' + error.message);
+                    });
+            });
+        }
 
         // Código para o modal de adicionar segmento
         const formAddSegmento = document.querySelector('#modalAddSegmento form');
@@ -344,6 +697,49 @@
                 });
             });
         }
+
+        // Adiciona o evento de busca de CNPJ a todos os campos de CNPJ na página
+        document.querySelectorAll('input[name="cnpj"]').forEach(function(input) {
+            input.addEventListener('blur', function() {
+                if (this.value && this.value.length > 0) {
+                    try {
+                        // Verifica se a função existe e a chama
+                        if (typeof buscarCNPJSimples === 'function') {
+                            buscarCNPJSimples(this.value);
+                        } else {
+                            console.warn('Função buscarCNPJSimples não encontrada');
+                        }
+                    } catch (e) {
+                        console.error('Erro ao chamar buscarCNPJSimples:', e);
+                    }
+                }
+            });
+        });
+
+        // Adiciona a função confirmarExclusao ao escopo global
+        window.confirmarExclusao = function(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                // Criar um form dinâmico para enviar a requisição DELETE
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/customers/clientes/${id}`;
+
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_token';
+                tokenInput.value = document.querySelector('meta[name="csrf-token"]').content;
+
+                form.appendChild(methodInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        };
     });
 </script>
 @endsection
@@ -363,6 +759,8 @@
 
                     <form id="formAddCliente" class="row g-3" action="{{ route('clientes.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" id="atividades_secundarias_json" name="atividades_secundarias">
+
                         <div class="col-md-6">
                             <label class="form-label" for="add_razao_social">Razão Social</label>
                             <input type="text" class="form-control" id="add_razao_social" name="razao_social" required>
@@ -371,6 +769,21 @@
                             <label class="form-label" for="add_cnpj">CNPJ</label>
                             <input type="text" class="form-control" id="add_cnpj" name="cnpj" required>
                         </div>
+
+                        <!-- Atividade Principal -->
+                        <div class="col-md-12">
+                            <label class="form-label" for="add_atividade_principal">Atividade Principal</label>
+                            <input type="text" class="form-control" id="add_atividade_principal" name="atividade_principal" readonly>
+                        </div>
+
+                        <!-- Atividades Secundárias -->
+                        <div class="col-md-12">
+                            <label class="form-label">Atividades Secundárias</label>
+                            <div id="add_atividades_secundarias" class="border p-2 rounded bg-light" style="min-height: 40px; max-height: 120px; overflow-y: auto;">
+                                <p class="text-muted mb-0 small">As atividades secundárias serão exibidas aqui.</p>
+                            </div>
+                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label" for="add_ie">Inscrição Estadual</label>
                             <input type="text" class="form-control" id="add_ie" name="inscricao_estadual">
@@ -448,6 +861,8 @@
                     <form id="formEditCliente" class="row g-3" method="POST">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" id="edit_atividades_secundarias_json" name="atividades_secundarias">
+
                         <div class="col-md-6">
                             <label class="form-label" for="edit_razao_social">Razão Social</label>
                             <input type="text" class="form-control" id="edit_razao_social" name="razao_social" required>
@@ -456,6 +871,21 @@
                             <label class="form-label" for="edit_cnpj">CNPJ</label>
                             <input type="text" class="form-control" id="edit_cnpj" name="cnpj" required>
                         </div>
+
+                        <!-- Atividade Principal -->
+                        <div class="col-md-12">
+                            <label class="form-label" for="edit_atividade_principal">Atividade Principal</label>
+                            <input type="text" class="form-control" id="edit_atividade_principal" name="atividade_principal" readonly>
+                        </div>
+
+                        <!-- Atividades Secundárias -->
+                        <div class="col-md-12">
+                            <label class="form-label">Atividades Secundárias</label>
+                            <div id="edit_atividades_secundarias" class="border p-2 rounded bg-light" style="min-height: 40px; max-height: 120px; overflow-y: auto;">
+                                <p class="text-muted mb-0 small">As atividades secundárias serão exibidas aqui.</p>
+                            </div>
+                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label" for="edit_ie">Inscrição Estadual</label>
                             <input type="text" class="form-control" id="edit_ie" name="inscricao_estadual">
@@ -748,7 +1178,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Inicializa os modais
-    setupModalEdit('modalEditCliente', '/customers/clientes/__id__');
     setupModalEdit('modalEditTransportadora', '/customers/transportadoras/__id__');
     setupModalEdit('modalEditVeiculo', '/customers/veiculos/__id__');
 });
