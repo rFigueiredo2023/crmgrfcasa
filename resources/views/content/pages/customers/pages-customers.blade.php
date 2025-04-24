@@ -285,28 +285,22 @@
             cnpj = cnpj.replace(/\D/g, '');
 
             if (cnpj.length !== 14) {
-                Swal.fire({
-                    title: 'CNPJ Inválido',
-                    text: 'O CNPJ deve conter 14 dígitos numéricos.',
-                    icon: 'warning'
-                });
+                console.warn('CNPJ Inválido - não tem 14 dígitos');
                 return;
             }
 
-            // Feedback visual de carregamento
+            // URL do proxy Laravel
+            const apiUrl = `/consultar-cnpj/${cnpj}`;
+
+            // Iniciar um diálogo de carregamento
             const loadingAlert = Swal.fire({
-                title: 'Consultando CNPJ',
-                text: 'Aguarde enquanto consultamos os dados...',
-                icon: 'info',
+                title: 'Consultando CNPJ...',
+                html: 'Por favor, aguarde enquanto consultamos os dados do CNPJ.',
                 allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
+                didOpen: () => {
                     Swal.showLoading();
                 }
             });
-
-            // URL do proxy Laravel
-            const apiUrl = `/consultar-cnpj/${cnpj}`;
 
             // Requisição com fetch
             fetch(apiUrl)
@@ -336,6 +330,15 @@
                     if (!data.success) {
                         throw new Error(data.message || 'Erro na consulta do CNPJ');
                     }
+
+                    // Mostrar mensagem de sucesso
+                    Swal.fire({
+                        title: 'Consulta Realizada',
+                        text: 'Dados do CNPJ obtidos com sucesso!',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
 
                     try {
                         // Identificar qual modal está ativo (adicionar ou editar)
@@ -434,17 +437,23 @@
                             console.log('Dados completos da API:', data.data);
                         }
 
-                        // Preencher telefone se disponível
-                        if (data.data.phones && data.data.phones.length > 0) {
-                            const phone = data.data.phones[0];
-                            const formattedPhone = `(${phone.area}) ${phone.number}`;
-                            preencherCampo(`#${prefix}telefone`, formattedPhone);
-
-                            // Se houver um segundo telefone
-                            if (data.data.phones.length > 1) {
-                                const phone2 = data.data.phones[1];
-                                const formattedPhone2 = `(${phone2.area}) ${phone2.number}`;
-                                preencherCampo(`#${prefix}telefone2`, formattedPhone2);
+                        // Gerenciar campo SUFRAMA
+                        const campoSuframa = form.querySelector(`#${prefix}suframa`);
+                        if (campoSuframa) {
+                            if (data.data.suframa && data.data.suframa.length > 0) {
+                                // Preenche o campo SUFRAMA com o valor da API
+                                campoSuframa.value = data.data.suframa[0].number || '';
+                                campoSuframa.readOnly = false;
+                                campoSuframa.disabled = false;
+                                campoSuframa.style.backgroundColor = '';
+                                campoSuframa.style.cursor = 'text';
+                            } else {
+                                // Se não houver SUFRAMA, limpa e desabilita o campo
+                                campoSuframa.value = '';
+                                campoSuframa.readOnly = true;
+                                campoSuframa.disabled = true;
+                                campoSuframa.style.backgroundColor = '#e9ecef'; // Cinza escuro padrão do Bootstrap
+                                campoSuframa.style.cursor = 'not-allowed';
                             }
                         }
 
@@ -500,15 +509,6 @@
                                 console.warn(`Container de atividades secundárias não encontrado: ${containerId}`);
                             }
                         }
-
-                        // Mostrar mensagem de sucesso
-                        Swal.fire({
-                            title: 'Sucesso!',
-                            text: 'Dados do CNPJ carregados com sucesso',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
                     } catch (error) {
                         console.error('Erro ao processar dados:', error);
                         throw new Error('Erro ao processar os dados do CNPJ: ' + error.message);
@@ -577,18 +577,36 @@
                     return;
                 }
 
+                // Feedback visual de carregamento
+                const modalBody = this.querySelector('.modal-body');
+                const originalContent = modalBody.innerHTML;
+                modalBody.innerHTML = `
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-3">Carregando dados do cliente...</p>
+                    </div>
+                `;
+
                 // Atualiza a action do formulário
                 form.action = `/customers/clientes/${clienteId}`;
 
                 // Busca os dados do cliente via AJAX
                 fetch(`/customers/clientes/${clienteId}/edit`)
                     .then(response => {
+                        console.log('Status da resposta:', response.status);
                         if (!response.ok) {
-                            throw new Error('Erro na resposta da rede: ' + response.status);
+                            return response.text().then(text => {
+                                throw new Error(`Erro na resposta da rede: ${response.status} - ${text}`);
+                            });
                         }
                         return response.json();
                     })
                     .then(data => {
+                        // Restaura o conteúdo original do modal
+                        modalBody.innerHTML = originalContent;
+
                         console.log('Dados recebidos:', data);
                         if (!data) {
                             throw new Error('Dados do cliente não encontrados');
@@ -598,6 +616,25 @@
                         form.querySelector('#edit_razao_social').value = data.razao_social || '';
                         form.querySelector('#edit_cnpj').value = data.cnpj || '';
                         form.querySelector('#edit_ie').value = data.inscricao_estadual || '';
+
+                        // Tratamento específico para o campo SUFRAMA
+                        const campoSuframa = form.querySelector('#edit_suframa');
+                        if (campoSuframa) {
+                            if (data.suframa) {
+                                campoSuframa.value = data.suframa;
+                                campoSuframa.readOnly = false;
+                                campoSuframa.disabled = false;
+                                campoSuframa.style.backgroundColor = '';
+                                campoSuframa.style.cursor = 'text';
+                            } else {
+                                campoSuframa.value = '';
+                                campoSuframa.readOnly = true;
+                                campoSuframa.disabled = true;
+                                campoSuframa.style.backgroundColor = '#e9ecef';
+                                campoSuframa.style.cursor = 'not-allowed';
+                            }
+                        }
+
                         form.querySelector('#edit_email').value = data.email || '';
                         form.querySelector('#edit_cep').value = data.cep || '';
                         form.querySelector('#edit_endereco').value = data.endereco || '';
@@ -640,10 +677,82 @@
                                 }
                             }
                         }
+
+                        // Preencher dados adicionais da API CNPJa
+                        const preencher = (id, valor, formatador = null) => {
+                            const elemento = form.querySelector(id);
+                            if (elemento && valor !== undefined) {
+                                elemento.value = formatador ? formatador(valor) : valor;
+                            }
+                        };
+
+                        // Dados básicos da API CNPJa
+                        preencher('#edit_nome_fantasia', data.nome_fantasia);
+                        preencher('#edit_fundacao', data.fundacao, val => val ? new Date(val).toLocaleDateString('pt-BR') : '');
+                        preencher('#edit_situacao', data.situacao);
+                        preencher('#edit_data_situacao', data.data_situacao, val => val ? new Date(val).toLocaleDateString('pt-BR') : '');
+                        preencher('#edit_natureza_juridica', data.natureza_juridica);
+                        preencher('#edit_porte', data.porte);
+                        preencher('#edit_capital_social', data.capital_social, val => val ?
+                            parseFloat(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) : '');
+                        preencher('#edit_simples_nacional', data.simples_nacional, val => val ? 'Sim' : 'Não');
+
+                        // Preencher sócios
+                        const sociosContainer = form.querySelector('#edit_socios_container');
+                        if (sociosContainer) {
+                            // Limpar container
+                            sociosContainer.innerHTML = '';
+
+                            // Verificar se há sócios
+                            if (data.lista_socios) {
+                                let socios;
+                                try {
+                                    socios = typeof data.lista_socios === 'string' ?
+                                        JSON.parse(data.lista_socios) : data.lista_socios;
+
+                                    if (socios && socios.length > 0) {
+                                        const lista = document.createElement('ul');
+                                        lista.className = 'list-unstyled mb-0 small';
+
+                                        socios.forEach(socio => {
+                                            const item = document.createElement('li');
+                                            item.className = 'mb-2';
+                                            item.innerHTML = `<strong>${socio.nome || 'N/A'}</strong> - ${socio.funcao || 'N/A'} (${socio.idade || 'N/A'})`;
+                                            lista.appendChild(item);
+                                        });
+
+                                        sociosContainer.appendChild(lista);
+                                    } else {
+                                        sociosContainer.innerHTML = '<p class="text-muted mb-0 small">Nenhum sócio registrado.</p>';
+                                    }
+                                } catch (e) {
+                                    console.error('Erro ao processar lista de sócios:', e);
+                                    sociosContainer.innerHTML = '<p class="text-muted mb-0 small">Erro ao processar sócios.</p>';
+                                }
+                            } else if (data.socio_principal) {
+                                // Se não tiver lista mas tiver sócio principal
+                                const p = document.createElement('p');
+                                p.className = 'mb-0 small';
+                                p.innerHTML = `<strong>${data.socio_principal}</strong> - ${data.funcao_socio || 'N/A'}`;
+                                sociosContainer.appendChild(p);
+                            } else {
+                                sociosContainer.innerHTML = '<p class="text-muted mb-0 small">Nenhum sócio registrado.</p>';
+                            }
+                        }
                     })
                     .catch(error => {
                         console.error('Erro ao carregar dados do cliente:', error);
-                        alert('Erro ao carregar dados do cliente: ' + error.message);
+
+                        // Restaura o conteúdo original e mostra mensagem de erro
+                        modalBody.innerHTML = originalContent;
+
+                        // Mostra mensagem de erro no modal
+                        Swal.fire({
+                            title: 'Erro!',
+                            text: 'Erro ao carregar dados do cliente: ' + error.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
                     });
             });
         }
@@ -789,6 +898,10 @@
                             <input type="text" class="form-control" id="add_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="add_suframa">SUFRAMA</label>
+                            <input type="text" class="form-control" id="add_suframa" name="suframa">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="add_email">Email</label>
                             <input type="email" class="form-control" id="add_email" name="email">
                         </div>
@@ -863,6 +976,9 @@
                         @method('PUT')
                         <input type="hidden" id="edit_atividades_secundarias_json" name="atividades_secundarias">
 
+                        <!-- Dados Básicos do Cliente -->
+                        <h5 class="mb-3 border-bottom pb-2">Dados Básicos</h5>
+
                         <div class="col-md-6">
                             <label class="form-label" for="edit_razao_social">Razão Social</label>
                             <input type="text" class="form-control" id="edit_razao_social" name="razao_social" required>
@@ -891,9 +1007,17 @@
                             <input type="text" class="form-control" id="edit_ie" name="inscricao_estadual">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="edit_suframa">SUFRAMA</label>
+                            <input type="text" class="form-control" id="edit_suframa" name="suframa">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="edit_email">Email</label>
                             <input type="email" class="form-control" id="edit_email" name="email">
                         </div>
+
+                        <!-- Endereço -->
+                        <h5 class="col-12 mt-3 mb-3 border-bottom pb-2">Endereço</h5>
+
                         <div class="col-md-3">
                             <label class="form-label" for="edit_cep">CEP</label>
                             <input type="text" class="form-control" id="edit_cep" name="cep">
@@ -914,6 +1038,10 @@
                             <label class="form-label" for="edit_uf">UF</label>
                             <input type="text" class="form-control" id="edit_uf" name="uf" maxlength="2" required>
                         </div>
+
+                        <!-- Contato -->
+                        <h5 class="col-12 mt-3 mb-3 border-bottom pb-2">Contato</h5>
+
                         <div class="col-md-6">
                             <label class="form-label" for="edit_telefone">Telefone</label>
                             <input type="text" class="form-control" id="edit_telefone" name="telefone" required>
@@ -930,6 +1058,10 @@
                             <label class="form-label" for="edit_site">Site</label>
                             <input type="url" class="form-control" id="edit_site" name="site" placeholder="https://">
                         </div>
+
+                        <!-- Seção para Segmento -->
+                        <h5 class="col-12 mt-3 mb-3 border-bottom pb-2">Negócios</h5>
+
                         <div class="col-md-12">
                             <label class="form-label" for="edit_segmento_id">Segmento</label>
                             <select class="form-select" id="edit_segmento_id" name="segmento_id">
@@ -939,7 +1071,67 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 text-center">
+
+                        <!-- Dados da API CNPJa -->
+                        <div class="col-12 mt-4">
+                            <div class="accordion" id="accordionDadosCNPJa">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseApiData" aria-expanded="false" aria-controls="collapseApiData">
+                                            Dados Complementares (API CNPJa)
+                                        </button>
+                                    </h2>
+                                    <div id="collapseApiData" class="accordion-collapse collapse" data-bs-parent="#accordionDadosCNPJa">
+                                        <div class="accordion-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Nome Fantasia</label>
+                                                    <input type="text" class="form-control" id="edit_nome_fantasia" name="nome_fantasia" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Fundação</label>
+                                                    <input type="text" class="form-control" id="edit_fundacao" name="fundacao" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Situação</label>
+                                                    <input type="text" class="form-control" id="edit_situacao" name="situacao" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Data Situação</label>
+                                                    <input type="text" class="form-control" id="edit_data_situacao" name="data_situacao" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Natureza Jurídica</label>
+                                                    <input type="text" class="form-control" id="edit_natureza_juridica" name="natureza_juridica" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Porte</label>
+                                                    <input type="text" class="form-control" id="edit_porte" name="porte" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Capital Social</label>
+                                                    <input type="text" class="form-control" id="edit_capital_social" name="capital_social" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Simples Nacional</label>
+                                                    <input type="text" class="form-control" id="edit_simples_nacional" name="simples_nacional" readonly>
+                                                </div>
+
+                                                <!-- Sócios -->
+                                                <div class="col-12 mt-3">
+                                                    <h6 class="border-bottom pb-2">Sócios</h6>
+                                                    <div id="edit_socios_container" class="border p-2 rounded bg-light" style="min-height: 40px; max-height: 150px; overflow-y: auto;">
+                                                        <p class="text-muted mb-0 small">Informações sobre sócios serão exibidas aqui.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-center mt-4">
                             <button type="submit" class="btn btn-primary me-sm-3 me-1">Atualizar</button>
                             <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancelar</button>
                         </div>

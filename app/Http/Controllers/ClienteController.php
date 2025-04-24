@@ -109,30 +109,25 @@ class ClienteController extends Controller
     public function edit(Cliente $cliente)
     {
         try {
-            // Carrega as relações necessárias
-            $cliente->load(['historicos', 'inscricoesEstaduais', 'vendedor']);
+            // Log para debug
+            \Log::info('Iniciando carregamento de cliente para edição', ['cliente_id' => $cliente->id]);
 
-            // Garante que todos os campos são retornados
+            // Primeiro retorna apenas os dados básicos sem relacionamentos
             $clienteData = $cliente->toArray();
 
-            // Adiciona campos adicionais se necessário
-            $clienteData['atendimentos_count'] = $cliente->atendimentos()->count();
-            $clienteData['historicos_count'] = $cliente->historicos()->count();
-
-            // Formata as datas para exibição se necessário
-            if (isset($clienteData['created_at'])) {
-                $clienteData['created_at_formatted'] = date('d/m/Y H:i', strtotime($clienteData['created_at']));
-            }
-
-            if (isset($clienteData['updated_at'])) {
-                $clienteData['updated_at_formatted'] = date('d/m/Y H:i', strtotime($clienteData['updated_at']));
-            }
+            // Log dos dados que estão sendo retornados
+            \Log::info('Dados do cliente preparados para retorno', [
+                'cliente_id' => $cliente->id,
+                'fields' => array_keys($clienteData)
+            ]);
 
             return response()->json($clienteData);
         } catch (\Exception $e) {
-            Log::error('Erro ao carregar dados do cliente: ' . $e->getMessage(), [
-                'cliente_id' => $cliente->id,
-                'exception' => $e
+            \Log::error('Erro ao carregar dados do cliente: ' . $e->getMessage(), [
+                'cliente_id' => $cliente->id ?? 'não definido',
+                'exception_class' => get_class($e),
+                'exception_message' => $e->getMessage(),
+                'exception_trace' => $e->getTraceAsString()
             ]);
             return response()->json(['error' => 'Erro ao carregar dados do cliente: ' . $e->getMessage()], 500);
         }
