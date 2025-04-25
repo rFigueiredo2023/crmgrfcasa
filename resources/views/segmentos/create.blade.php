@@ -1,3 +1,4 @@
+{{-- Página de criação de segmentos --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Novo Segmento')

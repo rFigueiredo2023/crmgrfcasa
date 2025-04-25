@@ -1,3 +1,4 @@
+{{-- View de Pages clientes relacionada a content/pages/clientes --}}
 @include('components.modal-historico-cliente')
 
 <button type="button"

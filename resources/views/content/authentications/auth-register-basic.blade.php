@@ -1,3 +1,4 @@
+{{-- Página de autenticação: Auth register basic --}}
 @php
 $customizerHidden = 'customizer-hide';
 @endphp

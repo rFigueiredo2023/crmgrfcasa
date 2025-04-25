@@ -1,3 +1,4 @@
+{{-- Página principal de atendimentos --}}
 @extends('layouts.app')
 
 @section('content')

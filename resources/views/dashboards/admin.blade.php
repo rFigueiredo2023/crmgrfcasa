@@ -1,3 +1,4 @@
+{{-- View de Admin relacionada a dashboards --}}
 @extends('layouts.horizontalLayout')
 
 @section('title', 'Dashboard Admin')

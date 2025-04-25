@@ -1,3 +1,4 @@
+{{-- View de Dashboard vendas relacionada a content/pages --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Dashboard de Vendas')

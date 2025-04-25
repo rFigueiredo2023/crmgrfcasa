@@ -1,3 +1,4 @@
+{{-- Componente Modal historico cliente --}}
 <!-- Modal de Histórico -->
 <div class="modal fade" id="modalHistorico" tabindex="-1" aria-labelledby="modalHistoricoLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">

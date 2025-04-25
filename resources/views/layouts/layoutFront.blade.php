@@ -1,3 +1,4 @@
+{{-- Layout LayoutFront --}}
 @php
 $configData = Helper::appClasses();
 $isFront = true;

@@ -1,3 +1,4 @@
+{{-- Layout LayoutMaster --}}
 @isset($pageConfigs)
 {!! Helper::updatePageConfig($pageConfigs) !!}
 @endisset

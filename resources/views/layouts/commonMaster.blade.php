@@ -1,3 +1,4 @@
+{{-- Layout CommonMaster --}}
 <!DOCTYPE html>
 @php
 $menuFixed = ($configData['layout'] === 'vertical') ? ($menuFixed ?? '') : (($configData['layout'] === 'front') ? '' : $configData['headerType']);

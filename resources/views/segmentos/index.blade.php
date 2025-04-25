@@ -1,3 +1,4 @@
+{{-- Página principal de segmentos --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Segmentos')

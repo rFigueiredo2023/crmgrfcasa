@@ -7,27 +7,47 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Adiciona campos complementares à tabela clientes.
+     *
+     * Esta migration adiciona:
+     * - telefone2: campo para telefone alternativo
+     * - site: endereço do site do cliente
+     * - segmento_id: relacionamento com a tabela de segmentos
      */
     public function up(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            $table->string('telefone2')->nullable();
-            $table->string('site')->nullable();
-            $table->unsignedBigInteger('segmento_id')->nullable();
+            // Telefone alternativo
+            $table->string('telefone2')->nullable()
+                ->comment('Telefone alternativo ou secundário');
 
-            $table->foreign('segmento_id')->references('id')->on('segmentos')->nullOnDelete();
+            // Site da empresa
+            $table->string('site')->nullable()
+                ->comment('URL do site da empresa');
+
+            // Relação com segmento (setor de atuação)
+            $table->foreignId('segmento_id')->nullable()
+                ->comment('Identificador do segmento de mercado')
+                ->constrained('segmentos')
+                ->onUpdate('cascade')
+                ->onDelete('set null');
+
+            // Índice para melhorar performance em buscas por segmento
+            $table->index('segmento_id');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as alterações, removendo os campos adicionados.
      */
     public function down(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            $table->dropForeign(['segmento_id']);
-            $table->dropColumn(['telefone2', 'site', 'segmento_id']);
+            // Remove a constraint de chave estrangeira
+            $table->dropConstrainedForeignId('segmento_id');
+
+            // Remove os demais campos
+            $table->dropColumn(['telefone2', 'site']);
         });
     }
 };

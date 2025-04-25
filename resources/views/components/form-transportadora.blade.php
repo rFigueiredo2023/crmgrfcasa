@@ -1,3 +1,4 @@
+{{-- Componente Form transportadora --}}
 <!-- Modal para adicionar transportadora -->
 <div class="modal fade" id="modalAddTransportadora" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-simple modal-dialog-centered">

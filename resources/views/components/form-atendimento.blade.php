@@ -1,3 +1,4 @@
+{{-- Componente Form atendimento --}}
 @push('modals')
 <!-- Modal de Novo Atendimento -->
 <div class="modal fade" id="modalAtendimento" tabindex="-1" aria-labelledby="modalAtendimentoLabel" aria-hidden="true">

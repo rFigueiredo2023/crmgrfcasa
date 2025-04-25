@@ -1,3 +1,4 @@
+{{-- View de Pages customers relacionada a content/pages/customers --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Cadastros')

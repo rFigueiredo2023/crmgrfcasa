@@ -1,3 +1,4 @@
+{{-- Layout App --}}
 <!DOCTYPE html>
 <html>
 <head>

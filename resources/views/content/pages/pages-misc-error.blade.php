@@ -1,3 +1,4 @@
+{{-- View de Pages misc error relacionada a content/pages --}}
 @php
 $customizerHidden = 'customizer-hide';
 $configData = Helper::appClasses();

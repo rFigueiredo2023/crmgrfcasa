@@ -1,3 +1,4 @@
+{{-- Layout Scripts --}}
 <!-- BEGIN: Vendor JS-->
 
 @vite([

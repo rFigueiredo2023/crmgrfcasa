@@ -1,3 +1,4 @@
+{{-- Componente Offcanvas add cliente --}}
 <!-- Modal -->
 <div class="modal fade" id="basicModal" tabindex="-1" aria-labelledby="basicModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">

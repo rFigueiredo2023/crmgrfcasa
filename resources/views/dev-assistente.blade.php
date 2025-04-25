@@ -1,3 +1,4 @@
+{{-- View sem descrição detalhada. Revisar manualmente. --}}
 @extends('layouts.contentNavbarLayout')
 
 @section('title', 'Assistente de Desenvolvimento')

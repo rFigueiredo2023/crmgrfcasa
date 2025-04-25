@@ -1,3 +1,4 @@
+{{-- Componente Modal atendimento --}}
 <!-- Modal de Atendimento -->
 <div class="modal fade" id="atendimentoModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">

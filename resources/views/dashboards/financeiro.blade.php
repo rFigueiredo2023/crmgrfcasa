@@ -1,3 +1,4 @@
+{{-- View de Financeiro relacionada a dashboards --}}
 @extends('layouts.horizontalLayout')
 
 @section('title', 'Dashboard Financeiro')

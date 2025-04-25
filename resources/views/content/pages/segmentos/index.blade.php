@@ -1,3 +1,4 @@
+{{-- Página principal de content/pages/segmentos --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Segmentos')

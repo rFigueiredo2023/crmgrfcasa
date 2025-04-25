@@ -1,3 +1,4 @@
+{{-- Layout Footer front --}}
 <!-- Footer: Start -->
 <footer class="landing-footer bg-body footer-text">
   <div class="footer-top position-relative overflow-hidden z-1">

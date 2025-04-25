@@ -1,3 +1,4 @@
+{{-- Componente Modal historico lead --}}
 <!-- Modal de Histórico do Lead -->
 <div class="modal fade" id="modalHistoricoLead" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-simple">

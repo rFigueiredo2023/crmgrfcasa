@@ -1,3 +1,4 @@
+{{-- View de Lead relacionada a atendimentos/tabs --}}
 <button type="button"
         class="btn btn-icon btn-secondary"
         data-historico

@@ -1,3 +1,4 @@
+{{-- Página de edição de content/pages/atendimentos --}}
 <div class="mb-3">
     <label for="descricao" class="form-label">Descrição</label>
     <textarea class="form-control" id="descricao" name="descricao" rows="3" required>{{ $atendimento->descricao }}</textarea>

@@ -1,0 +1,19 @@
+# Ignorar pastas grandes e não relevantes
+node_modules/
+vendor/
+storage/
+docker/
+
+# Ignorar arquivos de travamento
+*.lock
+
+# Ignorar arquivos de ambiente
+.env
+.env.*
+
+# Ignorar arquivos de configuração
+config/
+config.*
+
+# Ignorar arquivos de cache
+cache/

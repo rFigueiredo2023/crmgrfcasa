@@ -1,3 +1,4 @@
+{{-- View de Pages leads relacionada a content/pages/leads --}}
 @extends('layouts/contentNavbarLayout')
 
 @section('title', 'Leads')

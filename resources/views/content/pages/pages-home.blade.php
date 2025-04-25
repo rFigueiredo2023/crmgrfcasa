@@ -1,3 +1,4 @@
+{{-- View de Pages home relacionada a content/pages --}}
 @php
     $configData = Helper::appClasses();
 @endphp

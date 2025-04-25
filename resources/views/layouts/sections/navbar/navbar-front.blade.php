@@ -1,3 +1,4 @@
+{{-- Layout Navbar front --}}
 @php
 use Illuminate\Support\Facades\Route;
 $currentRouteName = Route::currentRouteName();

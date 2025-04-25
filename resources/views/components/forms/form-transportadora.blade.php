@@ -1,3 +1,4 @@
+{{-- Componente Form transportadora --}}
 <!-- Offcanvas para adicionar transportadora -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasAddTransportadora" aria-labelledby="offcanvasAddTransportadoraLabel">
     <div class="offcanvas-header">

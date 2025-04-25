@@ -1,3 +1,4 @@
+{{-- Layout ScriptsIncludesFront --}}
 @php
 use Illuminate\Support\Facades\Vite;
 @endphp

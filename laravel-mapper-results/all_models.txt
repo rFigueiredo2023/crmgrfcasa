@@ -1,0 +1,11 @@
+./app/Models/Arquivo.php
+./app/Models/Atendimento.php
+./app/Models/Cliente.php
+./app/Models/Historico.php
+./app/Models/InscricaoEstadual.php
+./app/Models/Lead.php
+./app/Models/Mensagem.php
+./app/Models/Segmento.php
+./app/Models/Transportadora.php
+./app/Models/User.php
+./app/Models/Veiculo.php

@@ -1,3 +1,4 @@
+{{-- Página de edição de segmentos --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Editar Segmento')

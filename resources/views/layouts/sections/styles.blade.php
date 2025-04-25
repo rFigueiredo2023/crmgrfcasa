@@ -1,3 +1,4 @@
+{{-- Layout Styles --}}
 <!-- BEGIN: Theme CSS-->
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">

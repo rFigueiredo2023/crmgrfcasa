@@ -1,3 +1,4 @@
+{{-- View de Pages page2 relacionada a content/pages --}}
 @php
 $configData = Helper::appClasses();
 @endphp

@@ -1,3 +1,4 @@
+{{-- Página principal de content/clientes --}}
 @extends('layouts/contentNavbarLayout')
 
 @section('title', 'Clientes')

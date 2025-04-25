@@ -1,3 +1,4 @@
+{{-- Componente Form veiculo --}}
 <!-- Modal para adicionar veículo -->
 <div class="modal fade" id="modalAddVeiculo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-simple modal-dialog-centered">

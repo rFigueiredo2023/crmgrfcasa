@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\language\LanguageController;
 use App\Http\Controllers\pages\HomePage;
 use App\Http\Controllers\pages\Page2;
@@ -21,10 +22,14 @@ use App\Http\Controllers\Dashboards\VendasDashboardController;
 use App\Http\Controllers\Dashboards\FinancialDashboardController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadAtendimentoController;
-use App\Http\Controllers\LeadAtendimentoFakeController;
 use App\Http\Controllers\LeadHistoricoController;
 use App\Http\Controllers\AssistenteController;
-use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\UserController;
+
+// Locale
+Route::get('/lang/{locale}', [LanguageController::class, 'swap']);
+Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages.misc-error');
 
 // Rotas públicas
 Route::middleware('web')->group(function () {
@@ -65,39 +70,27 @@ Route::middleware('web')->group(function () {
 
         // Segmentos (protegidos pelo middleware admin)
         Route::middleware('admin')->group(function () {
-            Route::get('/segmentos', [SegmentoController::class, 'index'])->name('segmentos.index');
-            Route::post('/segmentos', [SegmentoController::class, 'store'])->name('segmentos.store');
-            Route::get('/segmentos/create', [SegmentoController::class, 'create'])->name('segmentos.create');
-            Route::get('/segmentos/{segmento}/edit', [SegmentoController::class, 'edit'])->name('segmentos.edit');
-            Route::put('/segmentos/{segmento}', [SegmentoController::class, 'update'])->name('segmentos.update');
-            Route::delete('/segmentos/{segmento}', [SegmentoController::class, 'destroy'])->name('segmentos.destroy');
+            Route::resource('segmentos', SegmentoController::class);
         });
 
         // Customers
         Route::prefix('customers')->group(function () {
-            Route::get('/', [Custormers::class, 'index'])->name('pages-customers');
+            Route::get('/', [Custormers::class, 'index'])->name('customers.index');
 
             // Clientes
-            Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
-            Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
-            Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit');
-            Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update');
-            Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
+            Route::resource('clientes', ClienteController::class)->except(['show']);
             Route::get('/clientes/{cliente}/historico', [ClienteController::class, 'historico'])->name('clientes.historico');
             Route::post('/clientes/{cliente}/historico', [ClienteController::class, 'storeHistorico'])->name('clientes.historico.store');
             Route::get('/api/clientes/{cliente}/atendimentos', [ClienteController::class, 'atendimentos'])
                 ->name('clientes.atendimentos');
-            // Nova rota para o proxy de consulta de CNPJ
+            // Consulta de CNPJ
             Route::get('/api/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('api.consultar-cnpj');
-            Route::get('/customers/api/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('customers.api.consultar-cnpj');
 
             // Transportadoras
-            Route::post('/transportadoras', [TransportadoraController::class, 'store'])->name('transportadoras.store');
-            Route::get('/transportadoras', [TransportadoraController::class, 'index'])->name('transportadoras.index');
+            Route::resource('transportadoras', TransportadoraController::class)->only(['index', 'store']);
 
             // Veículos
-            Route::post('/veiculos', [VeiculoController::class, 'store'])->name('veiculos.store');
-            Route::get('/veiculos', [VeiculoController::class, 'index'])->name('veiculos.index');
+            Route::resource('veiculos', VeiculoController::class)->only(['index', 'store']);
         });
 
         // Atendimentos
@@ -108,138 +101,38 @@ Route::middleware('web')->group(function () {
             Route::post('/lead-com-atendimento', [AtendimentoController::class, 'storeLeadComAtendimento'])->name('atendimentos.store-lead');
         });
 
-        Route::get('/atendimentos', [AtendimentoController::class, 'index'])->name('atendimentos.index');
-
         // Leads
-        Route::prefix('leads')->group(function () {
-            Route::get('/', [LeadController::class, 'index'])->name('leads.index');
-            Route::post('/', [LeadController::class, 'store'])->name('leads.store');
-            Route::put('/{lead}', [LeadController::class, 'update'])->name('leads.update');
-            Route::delete('/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
-        });
-
-        // Rotas de Leads
-        Route::get('/leads', [LeadController::class, 'index'])->name('leads.index');
+        Route::resource('leads', LeadController::class)->except(['show', 'edit', 'create']);
         Route::get('/leads/{lead}/historico', [LeadController::class, 'historico'])->name('leads.historico');
         Route::post('/leads/{lead}/historico', [LeadController::class, 'storeHistorico'])->name('leads.historico.store');
         Route::post('/leads/{lead}/converter', [LeadController::class, 'converter'])->name('leads.converter');
 
-        // Rotas para atendimentos de leads
+        // Atendimentos de leads
         Route::post('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'store'])->name('lead.atendimentos.store');
         Route::get('/leads/{lead}/atendimentos', [LeadAtendimentoController::class, 'show'])->name('lead.atendimentos.show');
         Route::get('/atendimentos/{atendimento}/anexo', [LeadAtendimentoController::class, 'downloadAnexo'])->name('atendimento.anexo.download');
 
-        // Rota de fallback para testar o problema com atendimento singular
-        Route::post('/leads/{id}/atendimento', [LeadAtendimentoFakeController::class, 'store'])->name('lead.atendimento.store');
+        // Histórico de leads
+        Route::get('/lead-historico/{id}', [LeadHistoricoController::class, 'index'])->name('lead.historico.index');
+        Route::post('/lead-historico/{id}', [LeadHistoricoController::class, 'store'])->name('lead.historico.store');
 
-        // Rota de teste para diagnóstico
-        Route::get('/teste-lead/{id}', function($id) {
-            return response()->json([
-                'success' => true,
-                'teste' => true,
-                'id' => $id
-            ]);
-        });
-
-        // Rota alternativa para histórico de lead sem usar route model binding
-        Route::get('/teste-historico-lead/{id}', function($id) {
-            try {
-                // Busca o lead diretamente pelo ID
-                $lead = \App\Models\Lead::find($id);
-
-                if (!$lead) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Lead não encontrado'
-                    ], 404);
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'lead_id' => $lead->id,
-                    'razao_social' => $lead->razao_social,
-                    'teste' => 'Rota de teste funcionando'
-                ]);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ], 500);
-            }
-        });
-
-        // Rotas para o assistente de desenvolvimento
+        // Assistente de desenvolvimento
         Route::get('/dev-assistente', [AssistenteController::class, 'index'])->name('dev-assistente');
         Route::post('/dev-assistente', [AssistenteController::class, 'perguntar'])->name('dev-assistente.perguntar');
 
-        // Rota de teste para API CNPJa (Apenas em desenvolvimento)
-        Route::get('/teste-cnpja/{cnpj}', function($cnpj) {
-            if (!app()->environment('local')) {
-                abort(404);
-            }
+        // Rota global para consulta de CNPJ
+        Route::get('/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('global.consultar-cnpj');
 
-            $cnpj = preg_replace('/\D/', '', $cnpj);
+        // API interna - Usuários
+        Route::get('/api/usuarios', [UserController::class, 'listarUsuariosVendas'])->name('api.usuarios');
 
-            if (strlen($cnpj) !== 14) {
-                return response()->json(['error' => 'CNPJ inválido'], 400);
-            }
-
-            // Garante que o token não tem espaços extras
-            $apiToken = trim(config('services.cnpja.token'));
-            $baseUrl = config('services.cnpja.base_url', 'https://api.cnpja.com');
-
-            // Log do token para debug
-            \Log::info('Token CNPJa usado na chamada de teste:', [
-                'token' => $apiToken,
-                'token_length' => strlen($apiToken)
-            ]);
-
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => $apiToken
-                ])->get("{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true");
-
-                return response()->json([
-                    'status' => $response->status(),
-                    'headers' => $response->headers(),
-                    'body' => $response->json(),
-                    'token_used' => $apiToken,
-                    'token_length' => strlen($apiToken),
-                    'url' => "{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true"
-                ]);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                    'token_used' => $apiToken,
-                    'url' => "{$baseUrl}/office/{$cnpj}?registrations=BR&suframa=true"
-                ], 500);
-            }
-        })->middleware('auth');
+        // Rotas para ambiente de desenvolvimento
+        if (app()->environment('local', 'development')) {
+            Route::prefix('teste')->group(function () {
+                Route::get('/teste-cnpja/{cnpj}', [TestController::class, 'testeCnpja']);
+                Route::get('/teste-lead/{id}', [TestController::class, 'testeLead']);
+                Route::get('/teste-historico-lead/{id}', [TestController::class, 'testeHistoricoLead']);
+            });
+        }
     });
-});
-
-// Locale
-Route::get('/lang/{locale}', [LanguageController::class, 'swap']);
-Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');
-
-// Rota global para consulta de CNPJ (pode ser acessada de qualquer lugar)
-Route::get('/consultar-cnpj/{cnpj}', [ClienteController::class, 'consultarCnpj'])->name('global.consultar-cnpj');
-
-// Nova rota para o controlador especializado de históricos de leads
-Route::get('/lead-historico/{id}', [LeadHistoricoController::class, 'index'])->name('lead.historico.index');
-Route::post('/lead-historico/{id}', [LeadHistoricoController::class, 'store'])->name('lead.historico.store');
-
-// Rota para o assistente de desenvolvimento
-// Route::get('/dev-assistente', App\Http\Livewire\DevAssistant::class)->name('dev-assistente');
-
-// API interna - Usuários
-Route::get('/api/usuarios', function() {
-    // Retornar lista de usuários com role vendedor/atendimento
-    $usuarios = \App\Models\User::whereIn('role', ['admin', 'vendas'])
-        ->select('id', 'name')
-        ->orderBy('name')
-        ->get();
-
-    return response()->json($usuarios);
 });

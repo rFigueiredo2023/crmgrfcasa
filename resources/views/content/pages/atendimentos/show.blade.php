@@ -1,3 +1,4 @@
+{{-- Página de visualização de content/pages/atendimentos --}}
 @extends('layouts/horizontalLayout')
 
 @section('title', 'Detalhes do Atendimento')
