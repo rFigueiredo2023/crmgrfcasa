@@ -19,6 +19,7 @@ class Transportadora extends Model
         'celular',
         'contato',
         'email',
+        'observacoes',
         'user_id'
     ];
 

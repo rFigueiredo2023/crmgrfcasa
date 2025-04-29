@@ -85,7 +85,7 @@ class Cliente extends Model
      */
     public function atendimentos(): HasMany
     {
-        return $this->hasMany(Atendimento::class);
+        return $this->morphMany(Atendimento::class, 'atendivel');
     }
 
     /**
@@ -107,9 +107,9 @@ class Cliente extends Model
     /**
      * Retorna o último atendimento do cliente
      */
-    public function ultimoAtendimento(): HasOne
+    public function ultimoAtendimento(): MorphOne
     {
-        return $this->hasOne(Atendimento::class)->latest();
+        return $this->morphOne(Atendimento::class, 'atendivel')->latest();
     }
 
     /**

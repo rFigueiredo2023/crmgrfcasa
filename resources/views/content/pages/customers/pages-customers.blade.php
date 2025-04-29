@@ -342,6 +342,68 @@
                     });
 
                     try {
+                        // Verificar se estamos no modal de transportadora
+                        const isTransportadoraModal = document.querySelector('#modalAddTransportadora.show');
+                        const modalTransportadora = document.getElementById('modalAddTransportadora');
+
+                        // Se for o modal de transportadora
+                        if (modalTransportadora &&
+                            (isTransportadoraModal || modalTransportadora.classList.contains('show'))) {
+                            console.log('Preenchendo dados de transportadora');
+
+                            // Pegar os elementos do formulário
+                            const razaoSocialInput = modalTransportadora.querySelector('input[name="razao_social"]');
+                            const inscricaoEstadualInput = modalTransportadora.querySelector('input[name="inscricao_estadual"]');
+                            const enderecoInput = modalTransportadora.querySelector('input[name="endereco"]');
+                            const codigoIbgeInput = modalTransportadora.querySelector('input[name="codigo_ibge"]');
+
+                            console.log('Elementos encontrados:', {
+                                razaoSocial: !!razaoSocialInput,
+                                inscricaoEstadual: !!inscricaoEstadualInput,
+                                endereco: !!enderecoInput,
+                                codigoIbge: !!codigoIbgeInput
+                            });
+
+                            // Preencher os campos com os dados da API
+                            if (razaoSocialInput && data.data.company) {
+                                razaoSocialInput.value = data.data.company.name || '';
+                                console.log('Razão social preenchida:', data.data.company.name);
+                            }
+
+                            // Preencher inscrição estadual
+                            if (inscricaoEstadualInput && data.data.registrations && data.data.registrations.BR) {
+                                inscricaoEstadualInput.value = data.data.registrations.BR.state_registration || '';
+                                console.log('IE preenchida:', data.data.registrations.BR.state_registration);
+                            }
+
+                            // Preencher endereço
+                            if (enderecoInput && data.data.address) {
+                                const address = data.data.address;
+                                let enderecoCompleto = `${address.street || ''}, ${address.number || ''} ${address.details || ''}`;
+                                enderecoCompleto += ` - ${address.district || ''}, ${address.city || ''} - ${address.state || ''}`;
+                                enderecoCompleto += ` CEP: ${address.zip || ''}`;
+
+                                enderecoInput.value = enderecoCompleto;
+                                console.log('Endereço preenchido:', enderecoCompleto);
+                            }
+
+                            // Preencher código IBGE
+                            if (codigoIbgeInput && data.data.address && data.data.address.ibge_code) {
+                                codigoIbgeInput.value = data.data.address.ibge_code;
+                                console.log('Código IBGE preenchido:', data.data.address.ibge_code);
+                            }
+
+                            // Não preencher campos que devem ser preenchidos pelo usuário:
+                            // - telefone
+                            // - celular
+                            // - email
+                            // - contato
+                            // - observacoes
+
+                            return; // Encerra aqui para não executar o código de clientes
+                        }
+
+                        // Código para cliente (existente)
                         // Identificar qual modal está ativo (adicionar ou editar)
                         const isAddModal = document.getElementById('modalAddCliente').classList.contains('show');
                         const prefix = isAddModal ? 'add_' : 'edit_';
@@ -850,6 +912,41 @@
                 form.submit();
             }
         };
+
+        // Adicionar evento para detectar quando o modal de transportadora for aberto
+        const modalAddTransportadora = document.getElementById('modalAddTransportadora');
+        if (modalAddTransportadora) {
+            modalAddTransportadora.addEventListener('shown.bs.modal', function() {
+                console.log('Modal de transportadora aberto');
+
+                // Mostrar estrutura HTML do modal
+                console.log('Estrutura do modal:', modalAddTransportadora.innerHTML);
+
+                // Detectar campo de CNPJ e adicionar evento de blur
+                const cnpjInput = modalAddTransportadora.querySelector('input[name="cnpj"]');
+                if (cnpjInput) {
+                    console.log('Campo CNPJ encontrado:', cnpjInput);
+
+                    // Adicionar evento de blur se ainda não tiver
+                    if (!cnpjInput.hasAttribute('data-consulta-attached')) {
+                        cnpjInput.setAttribute('data-consulta-attached', 'true');
+                        cnpjInput.addEventListener('blur', function() {
+                            console.log('Evento blur do CNPJ acionado');
+                            if (typeof buscarCNPJSimples === 'function') {
+                                buscarCNPJSimples(this.value);
+                            } else {
+                                console.warn('Função buscarCNPJSimples não encontrada');
+                            }
+                        });
+                        console.log('Evento de consulta CNPJ adicionado');
+                    }
+                } else {
+                    console.warn('Campo CNPJ não encontrado no modal');
+                }
+            });
+        } else {
+            console.warn('Modal de transportadora não encontrado');
+        }
     });
 </script>
 @endsection

@@ -5,7 +5,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalHistoricoLabel">Histórico de Atendimentos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeModalHistorico"></button>
             </div>
             <div class="modal-body">
                 <div class="cliente-info mb-4">
@@ -16,6 +16,9 @@
                         <!-- Os atendimentos serão inseridos aqui via JavaScript -->
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalHistoricoFooter">Fechar</button>
             </div>
         </div>
     </div>
@@ -89,7 +92,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const clienteNomeElement = document.getElementById('cliente_nome_historico');
     const tituloHistorico = document.getElementById('modalHistoricoLabel');
     const tabelaHistorico = document.getElementById('timeline_atendimentos');
-    const modal = new bootstrap.Modal(document.getElementById('modalHistorico'));
+    const modalElement = document.getElementById('modalHistorico');
+    const modal = modalElement ? new bootstrap.Modal(modalElement) : null;
+
+    // Garantir que o backdrop seja removido quando o modal for fechado
+    if (modalElement) {
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            // Remove qualquer backdrop restante
+            const backdrops = document.getElementsByClassName('modal-backdrop');
+            while(backdrops[0]) {
+                backdrops[0].parentNode.removeChild(backdrops[0]);
+            }
+            // Remover classe modal-open do body
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+    }
 
     // Função para exibir/ocultar o indicador de carregamento
     function setLoading(loading) {
@@ -140,45 +159,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
             setLoading(false);
+            console.log('Dados recebidos da API:', data);
 
-            if (data.success === false) {
+            // Limpa o container
+            timelineContainer.innerHTML = '';
+
+            // Verifica o formato dos dados (diferentes APIs podem retornar formatos diferentes)
+            let atendimentosArray = [];
+
+            if (Array.isArray(data)) {
+                // Resposta direta como array
+                atendimentosArray = data;
+            } else if (data.success === false) {
                 throw new Error(data.message || 'Erro ao carregar os dados.');
-            }
-
-            // Limpa a tabela
-            tabelaHistorico.innerHTML = '';
-
-            // Verifica se há dados para exibir
-            if (data.historicos && data.historicos.length > 0) {
-                // Renderiza o histórico
-                data.historicos.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.tipo || 'N/A'}</td>
-                        <td>${item.texto || 'N/A'}</td>
-                        <td><span class="badge bg-label-info">${item.data || 'N/A'}</span></td>
-                        <td>${item.vendedora || 'N/A'}</td>
-                    `;
-                    tabelaHistorico.appendChild(row);
-                });
-            } else if (data.data && data.data.length > 0) {
-                // Formato alternativo para leads
-                data.data.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.tipo || 'N/A'}</td>
-                        <td>${item.texto || 'N/A'}</td>
-                        <td><span class="badge bg-label-info">${item.data || 'N/A'}</span></td>
-                        <td>${item.user?.name || 'N/A'}</td>
-                    `;
-                    tabelaHistorico.appendChild(row);
-                });
+            } else if (data.historicos && Array.isArray(data.historicos)) {
+                // Formato com historicos
+                atendimentosArray = data.historicos;
+            } else if (data.data && Array.isArray(data.data)) {
+                // Formato com data
+                atendimentosArray = data.data;
             } else {
-                // Nenhum histórico
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="4" class="text-center">Nenhum histórico encontrado</td>`;
-                tabelaHistorico.appendChild(row);
+                // Sem dados
+                atendimentosArray = [];
             }
+
+            // Se não houver atendimentos
+            if (atendimentosArray.length === 0) {
+                timelineContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        Nenhum histórico de atendimento encontrado para este cliente.
+                    </div>
+                `;
+                modal.show();
+                return;
+            }
+
+            // Renderiza os atendimentos na timeline
+            atendimentosArray.forEach(item => {
+                // Data do atendimento (pode estar em diferentes campos dependendo da API)
+                const dataAtendimento = item.data_atendimento || item.data || item.created_at || 'N/A';
+
+                // Determina a cor com base no status
+                let statusColor = 'primary';
+                if (item.status) {
+                    if (item.status.toLowerCase() === 'concluído' || item.status.toLowerCase() === 'concluido') {
+                        statusColor = 'success';
+                    } else if (item.status.toLowerCase() === 'pendente') {
+                        statusColor = 'warning';
+                    } else if (item.status.toLowerCase() === 'cancelado') {
+                        statusColor = 'danger';
+                    }
+                }
+
+                // Cria o item da timeline
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                timelineItem.innerHTML = `
+                    <div class="timeline-point bg-${statusColor}"></div>
+                    <div class="timeline-content">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${item.tipo_contato || 'Atendimento'}</h6>
+                            <span class="badge bg-label-${statusColor}">${dataAtendimento}</span>
+                        </div>
+                        <p>${item.descricao}</p>
+                        ${item.proxima_acao ? `<p><strong>Próxima ação:</strong> ${item.proxima_acao}</p>` : ''}
+                        ${item.data_proxima_acao ? `<p><strong>Data próxima ação:</strong> ${item.data_proxima_acao}</p>` : ''}
+                        <div class="text-end mt-2">
+                            <small class="text-muted">Atendente: ${item.vendedor || 'Não atribuído'}</small>
+                        </div>
+                    </div>
+                `;
+                timelineContainer.appendChild(timelineItem);
+            });
 
             // Exibe o modal
             modal.show();
@@ -186,11 +238,14 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erro ao carregar histórico:', error);
             setLoading(false);
 
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro',
-                text: error.message || 'Erro ao carregar o histórico de atendimentos.'
-            });
+            // Exibe mensagem de erro no container
+            timelineContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    Erro ao carregar histórico: ${error.message}
+                </div>
+            `;
+
+            modal.show();
         }
     }
 
@@ -198,6 +253,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalHistorico = document.getElementById('modalHistorico');
     if (modalHistorico) {
         const modal = new bootstrap.Modal(modalHistorico);
+
+        // Função para fechar o modal e limpar o backdrop
+        function fecharModalCompletamente() {
+            modal.hide();
+            // Garantir que o backdrop seja removido
+            setTimeout(() => {
+                const backdrops = document.getElementsByClassName('modal-backdrop');
+                while(backdrops[0]) {
+                    backdrops[0].parentNode.removeChild(backdrops[0]);
+                }
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, 150);
+        }
+
+        // Manipuladores para os botões de fechar
+        const closeBtnHeader = document.getElementById('closeModalHistorico');
+        const closeBtnFooter = document.getElementById('closeModalHistoricoFooter');
+
+        if (closeBtnHeader) {
+            closeBtnHeader.addEventListener('click', fecharModalCompletamente);
+        }
+
+        if (closeBtnFooter) {
+            closeBtnFooter.addEventListener('click', fecharModalCompletamente);
+        }
 
         // Adiciona o evento de click aos botões
         document.querySelectorAll('[data-bs-target="#modalHistorico"]').forEach(button => {
@@ -233,8 +315,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Determina a URL correta com base no tipo
                 let url = tipo === 'lead'
                     ? `/lead-historico/${id}`
-                    : `/customers/api/clientes/${id}/atendimentos`;
+                    : `/historico/cliente/${id}`;
 
+                console.log(`URL para histórico: ${url}`);
                 carregarHistorico(id, nome, url);
             });
         });

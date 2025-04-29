@@ -30,9 +30,20 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label" for="cnpj">CNPJ *</label>
-              <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ old('cnpj') }}" onblur="buscarCNPJSimples(this.value)">
-              <div class="invalid-feedback">CNPJ é obrigatório</div>
+              <x-campo-cnpj
+                id="campo-cnpj-cliente"
+                :campos="[
+                  'razao_social' => 'company.name',
+                  'email' => 'company.email',
+                  'endereco' => 'address',
+                  'municipio' => 'address.city',
+                  'uf' => 'address.state',
+                  'cep' => 'address.zip',
+                  'telefone' => 'phones.0.number'
+                ]"
+                modalSelector="#clienteModal"
+                value="{{ old('cnpj') }}"
+              />
               @error('cnpj') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             <div class="col-md-6">
@@ -156,17 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const modalTitle = document.getElementById('modalTitle');
 
   // Código de máscara com verificação de segurança
-  if (window.jQuery && jQuery().inputmask && $("#cnpj").length) {
-    try {
-      $("#cnpj").inputmask({
-        mask: '99.999.999/9999-99',
-        keepStatic: true
-      });
-    } catch (e) {
-      console.warn("Erro ao aplicar máscara no CNPJ:", e);
-    }
-  }
-
   if (window.jQuery && jQuery().inputmask && $("#telefone").length) {
     try {
       $("#telefone").inputmask({
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
           document.getElementById('cliente_id').value = data.id;
           document.getElementById('razao_social').value = data.razao_social;
           document.getElementById('email').value = data.email || '';
-          document.getElementById('cnpj').value = data.cnpj;
+          document.getElementById('campo-cnpj-cliente').value = data.cnpj;
           document.getElementById('inscricao_estadual').value = data.inscricao_estadual || '';
           document.getElementById('telefone').value = data.telefone;
           document.getElementById('contato').value = data.contato;
@@ -329,25 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   });
-
-  // Adicionar evento de busca de CNPJ de forma segura
-  try {
-    const camposCNPJ = document.querySelectorAll('input[name="cnpj"]');
-    camposCNPJ.forEach(function(input) {
-      input.addEventListener('blur', function() {
-        buscarCNPJSimples(this.value);
-      });
-    });
-
-    // Também adicionar via jQuery para compatibilidade com modais carregados depois
-    if (window.jQuery) {
-      $(document).on('blur', 'input[name="cnpj"]', function() {
-        buscarCNPJSimples(this.value);
-      });
-    }
-  } catch (e) {
-    console.error("Erro ao configurar eventos de CNPJ:", e);
-  }
 });
 
 // Função para exibir atividades secundárias na interface
@@ -374,209 +355,5 @@ function exibirAtividadesSecundarias(atividades) {
   });
 
   container.appendChild(lista);
-}
-
-// Função simplificada para buscar CNPJ sem depender de bibliotecas externas
-function buscarCNPJSimples(cnpj) {
-  console.log('Função buscarCNPJSimples chamada com:', cnpj);
-  // Remove caracteres não numéricos
-  cnpj = cnpj.replace(/\D/g, '');
-  console.log('CNPJ sanitizado:', cnpj);
-
-  if (cnpj.length !== 14) {
-    console.log('CNPJ inválido - não tem 14 dígitos');
-    // Verifica se SweetAlert2 está disponível
-    if (typeof Swal !== 'undefined') {
-      Swal.fire({
-        title: 'CNPJ Inválido',
-        text: 'O CNPJ deve conter 14 dígitos numéricos.',
-        icon: 'warning'
-      });
-    } else {
-      alert('CNPJ inválido. O CNPJ deve conter 14 dígitos numéricos.');
-    }
-    return;
-  }
-
-  // Feedback visual de carregamento
-  let loadingAlert = null;
-  if (typeof Swal !== 'undefined') {
-    loadingAlert = Swal.fire({
-      title: 'Consultando CNPJ',
-      text: 'Aguarde enquanto consultamos os dados...',
-      icon: 'info',
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      willOpen: () => {
-        Swal.showLoading();
-      }
-    });
-  } else {
-    console.log('Consultando CNPJ, aguarde...');
-  }
-
-  // URL do proxy Laravel
-  const apiUrl = `/api/consultar-cnpj/${cnpj}`;
-  console.log('Consultando URL do proxy:', apiUrl);
-
-  // Requisição com fetch
-  fetch(apiUrl)
-    .then(response => {
-      console.log('Status da resposta:', response.status);
-
-      // Primeiro obtém o texto da resposta para verificação
-      return response.text().then(text => {
-        // Log do texto da resposta para depuração
-        console.log('Resposta bruta da API:', text);
-
-        if (!response.ok) {
-          throw new Error(`Erro ${response.status}: ${text}`);
-        }
-
-        // Verificar se o texto é um JSON válido antes de parsear
-        if (!text || text.trim() === '') {
-          throw new Error('Resposta vazia recebida da API');
-        }
-
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          console.error('Erro ao parsear JSON:', text);
-          throw new Error('Resposta inválida recebida da API');
-        }
-      });
-    })
-    .then(data => {
-      console.log('Dados recebidos da API:', data);
-
-      // Fechar o diálogo de carregamento
-      if (typeof Swal !== 'undefined' && loadingAlert) {
-        Swal.close();
-      }
-
-      if (!data.success) {
-        throw new Error(data.message || 'Erro na consulta do CNPJ');
-      }
-
-      // Verificar se existem os dados necessários
-      if (!data.data || !data.data.company) {
-        throw new Error('Dados incompletos recebidos da API');
-      }
-
-      try {
-        // Preenchimento dos campos
-        document.querySelectorAll('input[name="razao_social"]').forEach(el => el.value = data.data.company.name || '');
-
-        // Preencher outros campos com verificação de existência
-        const preencherCampo = (seletor, valor, fallback = '') => {
-          document.querySelectorAll(seletor).forEach(el => el.value = valor || fallback);
-        };
-
-        // Endereço pode estar em formatos diferentes dependendo da API
-        const endereco = data.data.address;
-        if (endereco) {
-          preencherCampo('input[name="inscricao_estadual"]', data.data.registrations?.[0]?.number);
-          preencherCampo('input[name="endereco"]', `${endereco.street || ''}, ${endereco.number || ''}`);
-          preencherCampo('input[name="municipio"]', endereco.city);
-          preencherCampo('input[name="uf"]', endereco.state);
-          preencherCampo('input[name="cep"]', endereco.zip);
-        }
-
-        // Preencher porte da empresa
-        if (data.data.company && data.data.company.size) {
-          const porteSelectElement = document.getElementById('porte_empresa');
-          const porteValue = data.data.company.size.acronym;
-          if (porteSelectElement && porteValue) {
-            porteSelectElement.value = porteValue;
-          }
-        }
-
-        // Preencher atividade principal
-        if (data.data.mainActivity) {
-          preencherCampo('input[name="atividade_principal"]', data.data.mainActivity.text);
-        }
-
-        // Preencher atividades secundárias
-        if (data.data.sideActivities) {
-          exibirAtividadesSecundarias(data.data.sideActivities);
-        }
-
-        // Se o IBGE já veio na resposta da API, usar ele
-        if (data.data.ibge) {
-          preencherCampo('input[name="codigo_ibge"]', data.data.ibge);
-        }
-        // Se não veio o IBGE, mas veio o município e UF, consultar a BrasilAPI
-        else if (endereco?.city && endereco?.state) {
-          // Formatar município e UF para o formato esperado pela BrasilAPI
-          const municipio = (endereco.city || '').toUpperCase().replace(/\s+/g, '-');
-          const uf = (endereco.state || '').toUpperCase();
-
-          console.log('Consultando BrasilAPI para código IBGE:', municipio, uf);
-
-          // Buscar IBGE com a BrasilAPI
-          fetch(`https://brasilapi.com.br/api/ibge/municipios/v1/${uf}`)
-            .then(res => {
-              if (!res.ok) {
-                throw new Error(`Erro ${res.status} ao consultar BrasilAPI`);
-              }
-              return res.json();
-            })
-            .then(municipios => {
-              // BrasilAPI retorna uma lista de municípios do estado
-              // Precisamos encontrar o que corresponde ao nome do município
-              const municipioNormalizado = endereco.city.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-              // Procurar o município na lista retornada
-              const municipioEncontrado = municipios.find(m => {
-                const nomeNormalizado = m.nome.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                return nomeNormalizado === municipioNormalizado ||
-                       nomeNormalizado.includes(municipioNormalizado) ||
-                       municipioNormalizado.includes(nomeNormalizado);
-              });
-
-              if (municipioEncontrado && municipioEncontrado.codigo_ibge) {
-                console.log('Código IBGE encontrado:', municipioEncontrado.codigo_ibge);
-                preencherCampo('input[name="codigo_ibge"]', municipioEncontrado.codigo_ibge);
-              } else {
-                console.warn('Não foi possível encontrar o código IBGE para', endereco.city, endereco.state);
-              }
-            })
-            .catch(err => {
-              console.warn('Não foi possível buscar o código IBGE na BrasilAPI:', err);
-            });
-        }
-
-        // Mostrar mensagem de sucesso
-        if (typeof Swal !== 'undefined') {
-          Swal.fire({
-            title: 'Sucesso!',
-            text: 'Dados do CNPJ carregados com sucesso',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        } else {
-          console.log('Dados do CNPJ carregados com sucesso');
-        }
-      } catch (e) {
-        console.error('Erro ao processar dados da API:', e);
-        throw e;
-      }
-    })
-    .catch(error => {
-      console.error('Erro ao consultar CNPJ:', error);
-
-      // Fechar o diálogo de carregamento e mostrar o erro
-      if (typeof Swal !== 'undefined') {
-        Swal.fire({
-          title: 'Erro na Consulta',
-          text: error.message || 'Não foi possível consultar o CNPJ.',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
-      } else {
-        alert('Erro na consulta do CNPJ: ' + (error.message || 'Não foi possível consultar o CNPJ.'));
-      }
-    });
 }
 </script>

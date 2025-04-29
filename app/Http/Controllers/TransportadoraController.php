@@ -24,7 +24,8 @@ class TransportadoraController extends Controller
             'telefone' => 'required|string|max:20',
             'celular' => 'nullable|string|max:20',
             'contato' => 'required|string|max:255',
-            'email' => 'required|email|max:255'
+            'email' => 'required|email|max:255',
+            'observacoes' => 'nullable|string|max:1000'
         ]);
 
         $transportadora = Transportadora::create([
@@ -37,6 +38,7 @@ class TransportadoraController extends Controller
             'celular' => $request->celular,
             'contato' => $request->contato,
             'email' => $request->email,
+            'observacoes' => $request->observacoes,
             'user_id' => auth()->id() // Registra o usuário que está cadastrando
         ]);
 

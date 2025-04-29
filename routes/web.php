@@ -81,6 +81,7 @@ Route::middleware('web')->group(function () {
             Route::resource('clientes', ClienteController::class)->except(['show']);
             Route::get('/clientes/{cliente}/historico', [ClienteController::class, 'historico'])->name('clientes.historico');
             Route::post('/clientes/{cliente}/historico', [ClienteController::class, 'storeHistorico'])->name('clientes.historico.store');
+            // Rota para os atendimentos de um cliente (para a UI do sistema)
             Route::get('/api/clientes/{cliente}/atendimentos', [ClienteController::class, 'atendimentos'])
                 ->name('clientes.atendimentos');
             // Consulta de CNPJ
@@ -92,6 +93,10 @@ Route::middleware('web')->group(function () {
             // Veículos
             Route::resource('veiculos', VeiculoController::class)->only(['index', 'store']);
         });
+
+        // Rota para histórico completo (para o modal de histórico)
+        Route::get('/historico/cliente/{cliente}', [AtendimentoController::class, 'historico'])
+            ->name('historico.cliente');
 
         // Atendimentos
         Route::prefix('atendimentos')->group(function () {

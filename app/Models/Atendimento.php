@@ -10,7 +10,8 @@ class Atendimento extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cliente_id',
+        'atendivel_id',
+        'atendivel_type',
         'user_id',
         'tipo_contato',
         'descricao',
@@ -20,7 +21,8 @@ class Atendimento extends Model
         'data_proxima_acao',
         'ativar_lembrete',
         'anexo',
-        'status'
+        'status',
+        'data_atendimento'
     ];
 
     protected $casts = [
@@ -41,9 +43,14 @@ class Atendimento extends Model
         });
     }
 
+    public function atendivel()
+    {
+        return $this->morphTo();
+    }
+
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(Cliente::class, 'atendivel_id')->where('atendivel_type', Cliente::class);
     }
 
     public function vendedor()

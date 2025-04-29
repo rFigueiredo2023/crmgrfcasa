@@ -10,6 +10,7 @@ use App\Enums\StatusAtendimento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -44,7 +45,6 @@ class AtendimentoController extends Controller
 
         try {
             $data = $request->only([
-                'cliente_id',
                 'tipo_contato',
                 'descricao',
                 'retorno',
@@ -57,7 +57,11 @@ class AtendimentoController extends Controller
 
             $data['user_id'] = auth()->id();
 
-            $atendimento = Atendimento::create($data);
+            // Buscar o cliente
+            $cliente = Cliente::find($request->cliente_id);
+
+            // Criar o atendimento usando o relacionamento polimórfico
+            $atendimento = $cliente->atendimentos()->create($data);
 
             if ($request->hasFile('anexo')) {
                 $path = $request->file('anexo')->store('atendimentos/anexos', 'public');
@@ -65,8 +69,7 @@ class AtendimentoController extends Controller
                 $atendimento->save();
             }
 
-            // Buscar o cliente e criar histórico via relacionamento polimórfico
-            $cliente = Cliente::find($request->cliente_id);
+            // Criar histórico via relacionamento polimórfico
             $cliente->historicos()->create([
                 'user_id' => auth()->id(),
                 'tipo' => $request->tipo_contato,
@@ -80,7 +83,7 @@ class AtendimentoController extends Controller
                 'message' => 'Atendimento registrado com sucesso',
                 'atendimento' => [
                     'id' => $atendimento->id,
-                    'cliente' => $atendimento->cliente->razao_social,
+                    'cliente' => $cliente->razao_social,
                     'vendedor' => auth()->user()->name,
                     'tipo' => $atendimento->tipo_contato,
                     'descricao' => $atendimento->descricao,
@@ -270,7 +273,8 @@ class AtendimentoController extends Controller
     public function getAtendimentosByCliente($cliente_id)
     {
         try {
-            $atendimentos = Atendimento::where('cliente_id', $cliente_id)
+            $cliente = Cliente::findOrFail($cliente_id);
+            $atendimentos = $cliente->atendimentos()
                 ->select([
                     'id',
                     'tipo_contato',
@@ -325,7 +329,7 @@ class AtendimentoController extends Controller
     public function getByCliente(Cliente $cliente): JsonResponse
     {
         try {
-            $atendimentos = Atendimento::where('cliente_id', $cliente->id)
+            $atendimentos = $cliente->atendimentos()
                 ->select([
                     'tipo_contato',
                     'descricao',
@@ -443,41 +447,23 @@ class AtendimentoController extends Controller
     public function historico(Cliente $cliente)
     {
         try {
-            \Log::info('Buscando histórico para o cliente ID: ' . $cliente->id);
+            Log::info('Método historico simplificado - Cliente ID: ' . $cliente->id);
 
-            $atendimentos = $cliente->atendimentos()
-                ->with('user')
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            \Log::info('Atendimentos encontrados: ' . $atendimentos->count());
-
-            if ($atendimentos->isEmpty()) {
-                \Log::info('Nenhum atendimento encontrado para o cliente');
-                return response()->json([]);
-            }
-
-            $dados = $atendimentos->map(function ($atendimento) {
-                return [
-                    'id' => $atendimento->id,
-                    'tipo_contato' => $atendimento->tipo_contato,
-                    'descricao' => $atendimento->descricao,
-                    'data_atendimento' => $atendimento->created_at,
-                    'status' => $atendimento->status,
-                    'retorno' => $atendimento->retorno,
-                    'data_retorno' => $atendimento->data_retorno,
-                    'proxima_acao' => $atendimento->proxima_acao,
-                    'vendedor' => $atendimento->user->name ?? 'Não atribuído'
-                ];
-            });
-
-            \Log::info('Dados formatados com sucesso');
-            return response()->json($dados);
+            // Retornar uma resposta mínima para verificar se o controlador funciona
+            return response()->json([
+                'mensagem' => 'Teste de resposta simplificada',
+                'cliente_id' => $cliente->id,
+                'cliente_nome' => $cliente->razao_social,
+                'timestamp' => now()->format('Y-m-d H:i:s')
+            ]);
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao carregar histórico de atendimentos: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            return response()->json(['error' => 'Erro ao carregar os atendimentos: ' . $e->getMessage()], 500);
+            Log::error('Erro no método simplificado: ' . $e->getMessage());
+            Log::error('Arquivo: ' . $e->getFile() . ' - Linha: ' . $e->getLine());
+
+            return response()->json([
+                'error' => 'Erro no método simplificado: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

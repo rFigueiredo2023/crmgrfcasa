@@ -229,12 +229,12 @@ class ClienteController extends Controller
                         'status' => $atendimento->status,
                         'descricao' => $atendimento->descricao,
                         'retorno' => $atendimento->retorno,
-                        'data_retorno' => $atendimento->data_retorno,
+                        'data_retorno' => $atendimento->data_retorno ? $atendimento->data_retorno->format('d/m/Y H:i') : null,
                         'proxima_acao' => $atendimento->proxima_acao,
-                        'data_proxima_acao' => $atendimento->data_proxima_acao,
-                        'data_atendimento' => $atendimento->data_atendimento ?? $atendimento->created_at,
+                        'data_proxima_acao' => $atendimento->data_proxima_acao ? $atendimento->data_proxima_acao->format('d/m/Y H:i') : null,
+                        'data_atendimento' => $atendimento->data_atendimento ? $atendimento->data_atendimento->format('d/m/Y H:i') : $atendimento->created_at->format('d/m/Y H:i'),
                         'anexo' => $atendimento->anexo,
-                        'created_at' => $atendimento->created_at,
+                        'created_at' => $atendimento->created_at->format('d/m/Y H:i'),
                         'vendedor' => $atendimento->vendedor ? $atendimento->vendedor->name : 'Não atribuído'
                     ];
                 });
